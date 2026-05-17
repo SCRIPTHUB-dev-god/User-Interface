@@ -3,7 +3,7 @@
 loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wave-ui/refs/heads/main/main.lua"))()
 ```
 
-```
+```luau
 local Icarus = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wave-ui/refs/heads/main/main.lua"))()
 local win = Icarus:SetWindows({
     text = "My GUI",
