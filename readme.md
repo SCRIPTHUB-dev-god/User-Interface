@@ -4,23 +4,29 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wav
 ```
 
 ```luau
-local Icarus = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wave-ui/refs/heads/main/main.lua"))()
+local Icarus = local Icarus = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wave-ui/refs/heads/main/main.lua"))()
+
 local win = Icarus:SetWindows({
     text = "My GUI",
-    theme = "Dark",
+    theme = "DeepBlue",
     size = UDim2.fromOffset(480, 300),
-    settransparent = 0.3,
+    settransparent = 0.2,
+    autoshow = true,
+    searchtopbar = true,
     loadinggui = true
 })
 
-local tab = win:AddTab({text = "Main"})
+local toggle1 = Icarus:AddToggleGui({
+    text = "Main Toggle",
+    geometry = "square"
+})
 
-local leftGb = tab:AddLeftGroupbox({text = "Left Group"})
-leftGb:AddToggle({text = "Toggle", callback = function(v) end})
+local toggle2 = Icarus:AddToggleGui({
+    text = "Secondary",
+    geometry = "rectangle"
+})
 
-local rightGb = tab:AddRightGroupbox({text = "Right Group"})
-
-local tabbox = leftGb:AddTabbox({text = "Settings"})
-local tab1 = tabbox:AddTab({text = "General"})
-tab1:AddButton({text = "Click"})
+local tab = win:AddTab({text = "Home"})
+local gb = tab:AddLeftGroupbox({text = "Settings"})
+gb:AddTextbox({text = "Name", placeholder = "Enter name..."})
 ```
