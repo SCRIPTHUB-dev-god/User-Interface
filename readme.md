@@ -4,17 +4,16 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wav
 ```
 
 ```luau
-local Icarus = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wave-ui/refs/heads/main/main.lua"))()
+local Icarus = loadstring(game:HttpGet("..."))()
 
+-- Buat toggle button dulu
 local win = Icarus:SetToggleGui({
     text = "Main Toggle",
-    geometry = "square"
+    geometry = "square"  -- atau "rectangle"
 }):SetWindows({
     text = "My GUI",
-    theme = "DeepBlue",
     size = UDim2.fromOffset(480, 300),
-    settransparent = 0.2,
-    autoshow = true,
+    autoshow = true,  -- true = GUI muncul, false = hanya toggle
     searchtopbar = true,
     loadinggui = true
 })
