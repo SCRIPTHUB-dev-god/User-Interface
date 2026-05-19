@@ -19,28 +19,6 @@ ScreenGui.IgnoreGuiInset = true
 ScreenGui.DisplayOrder = 999999999
 ScreenGui.Parent = CoreGui
 
-local LucideIcons = {
-    home = "rbxassetid://10723434711",
-    settings = "rbxassetid://10734950309",
-    user = "rbxassetid://10734896629",
-    shield = "rbxassetid://10723407389",
-    zap = "rbxassetid://10747372992",
-    box = "rbxassetid://10723343321",
-    activity = "rbxassetid://10723345088",
-    command = "rbxassetid://10723362834",
-    folder = "rbxassetid://10723369706",
-    code = "rbxassetid://10723354657",
-    cpu = "rbxassetid://10723363863",
-    target = "rbxassetid://10723415097",
-    eye = "rbxassetid://10723345118",
-    star = "rbxassetid://10723434811",
-    heart = "rbxassetid://10723370004",
-    layers = "rbxassetid://10723385697",
-    package = "rbxassetid://10723394478",
-    check = "rbxassetid://10723343350",
-    x = "rbxassetid://10747384394"
-}
-
 local IcarusCore = {
     Flags = {},
     ConfigPath = "IcarusConfig.json",
@@ -107,14 +85,6 @@ local function CreateStroke(parent, color, thickness)
     stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     stroke.Parent = parent
     return stroke
-end
-
-local function CreateGradient(parent, colors, rotation)
-    local gradient = Instance.new("UIGradient")
-    gradient.Color = ColorSequence.new(colors)
-    gradient.Rotation = rotation or 0
-    gradient.Parent = parent
-    return gradient
 end
 
 local function TweenObject(object, properties, duration, style)
@@ -407,25 +377,19 @@ function IcarusCore:CreateToggleButton(windowRef)
 end
 
 function IcarusLibrary:SetWindows(config)
-    local width = 480
-    local height = 300
-    
-    if config.size then
-        if type(config.size) == "table" then
-            width = config.size[1] or config.size.x or 480
-            height = config.size[2] or config.size.y or 300
-        end
-    end
+    local windowSize = config.size or UDim2.fromOffset(480, 300)
+    local width = windowSize.X.Offset
+    local height = windowSize.Y.Offset
     
     local window = Instance.new("Frame")
     window.Name = "IcarusWindow"
-    window.Size = UDim2.new(0, width, 0, height)
+    window.Size = windowSize
     window.Position = UDim2.new(0.5, -width / 2, 0.5, -height / 2)
     window.BackgroundColor3 = IcarusCore.Themes[config.theme or "Dark"].Background
     window.BorderSizePixel = 0
     window.ClipsDescendants = false
     window.Active = true
-    window.Visible = true
+    window.Visible = false
     window.Parent = ScreenGui
     CreateCorner(window, 8)
     CreateStroke(window, IcarusCore.Themes[config.theme or "Dark"].Border, 1)
@@ -562,7 +526,7 @@ function IcarusLibrary:SetWindows(config)
     end)
     
     local minimized = false
-    local originalSize = window.Size
+    local originalSize = windowSize
     local originalPos = window.Position
     
     minimizeBtn.MouseButton1Click:Connect(function()
@@ -594,7 +558,7 @@ function IcarusLibrary:SetWindows(config)
         TweenObject(window, {Size = UDim2.new(0, 0, 0, 0)}, 0.2, Enum.EasingStyle.Back)
         task.wait(0.2)
         window.Visible = false
-        TweenObject(window, {Size = UDim2.new(0, width, 0, height)}, 0.01)
+        TweenObject(window, {Size = windowSize}, 0.01)
         
         IcarusCore:CreateToggleButton(window)
         IcarusCore:Notify({
@@ -655,7 +619,10 @@ function IcarusLibrary:SetWindows(config)
             TweenObject(loadingText, {TextTransparency = 1}, 0.25)
             task.wait(0.25)
             loadingScreen:Destroy()
+            window.Visible = true
         end)
+    else
+        window.Visible = true
     end
     
     IcarusCore.MainWindow = window
@@ -869,7 +836,6 @@ function IcarusLibrary:AddTab(config)
             tabboxContent.Parent = groupboxContent
             
             local tabboxTabs = {}
-            local currentTabboxTab = nil
             
             local tabboxFunctions = {
                 Frame = tabboxFrame,
@@ -933,7 +899,6 @@ function IcarusLibrary:AddTab(config)
                     TweenObject(tabButton, {BackgroundColor3 = IcarusCore.Themes[self.Theme].Accent}, 0.1)
                     TweenObject(tabButton, {TextColor3 = Color3.fromRGB(255, 255, 255)}, 0.1)
                     tabContent.Visible = true
-                    currentTabboxTab = tabConfig.text
                 end)
                 
                 local tabFuncs = {
@@ -948,7 +913,6 @@ function IcarusLibrary:AddTab(config)
                     tabButton.BackgroundColor3 = IcarusCore.Themes[self.Theme].Accent
                     tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
                     tabContent.Visible = true
-                    currentTabboxTab = tabConfig.text
                 end
                 
                 function tabFuncs:AddToggle(cfg)
@@ -1091,7 +1055,7 @@ function CreateElement(elementType, config, parent, theme)
             if config.callback then config.callback(toggled) end
         end)
         
-        return {Frame = toggleFrame, SetValue = function(v) toggled = v end}
+        return {Frame = toggleFrame, SetValue = function(v) toggled = v end, GetValue = function() return toggled end}
         
     elseif elementType == "Button" then
         local button = Instance.new("TextButton")
@@ -1214,7 +1178,7 @@ function CreateElement(elementType, config, parent, theme)
         local defaultRatio = (config.default - config.min) / (config.max - config.min)
         sliderFill.Size = UDim2.new(defaultRatio, 0, 1, 0)
         
-        return {Frame = sliderFrame, SetValue = function(v) currentValue = v end}
+        return {Frame = sliderFrame, SetValue = function(v) currentValue = v end, GetValue = function() return currentValue end}
         
     elseif elementType == "Dropdown" then
         local dropdownFrame = Instance.new("Frame")
@@ -1336,7 +1300,7 @@ function CreateElement(elementType, config, parent, theme)
             end)
         end
         
-        return {Frame = dropdownFrame}
+        return {Frame = dropdownFrame, GetValue = function() return config.multi and selectedValues or selectedValues[1] end}
         
     elseif elementType == "Textbox" then
         local textboxFrame = Instance.new("Frame")
@@ -1369,6 +1333,7 @@ function CreateElement(elementType, config, parent, theme)
         textbox.PlaceholderColor3 = IcarusCore.Themes[theme].TextDim
         textbox.Font = Enum.Font.Gotham
         textbox.TextSize = 9
+        textbox.ClearTextOnFocus = false
         textbox.Parent = textboxFrame
         CreateCorner(textbox, 3)
         
@@ -1379,7 +1344,16 @@ function CreateElement(elementType, config, parent, theme)
             if config.callback then config.callback(textbox.Text) end
         end)
         
-        return {Frame = textboxFrame, SetValue = function(v) textbox.Text = v end}
+        return {
+            Frame = textboxFrame,
+            SetValue = function(v)
+                textbox.Text = v
+                if config.flag then IcarusCore.Flags[config.flag] = v end
+            end,
+            GetValue = function()
+                return textbox.Text
+            end
+        }
         
     elseif elementType == "Colorpicker" then
         local colorFrame = Instance.new("Frame")
@@ -1416,7 +1390,7 @@ function CreateElement(elementType, config, parent, theme)
         
         if config.flag then IcarusCore.Flags[config.flag] = currentColor end
         
-        return {Frame = colorFrame, SetValue = function(c) currentColor = c; colorDisplay.BackgroundColor3 = c end}
+        return {Frame = colorFrame, SetValue = function(c) currentColor = c; colorDisplay.BackgroundColor3 = c end, GetValue = function() return currentColor end}
         
     elseif elementType == "Keybind" then
         local keybindFrame = Instance.new("Frame")
@@ -1483,7 +1457,7 @@ function CreateElement(elementType, config, parent, theme)
             IcarusCore:AddKeybind(currentKey, config.callback)
         end
         
-        return {Frame = keybindFrame}
+        return {Frame = keybindFrame, GetValue = function() return currentKey end}
         
     elseif elementType == "Label" then
         local label = Instance.new("TextLabel")
