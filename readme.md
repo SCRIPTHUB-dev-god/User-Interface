@@ -9,7 +9,7 @@ local Icarus = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPT
 -- Buat toggle button dulu
 local win = Icarus:SetToggleGui({
     text = "Main Toggle",
-    geometry = "square"  -- atau "rectangle"
+    cornercolor = "#FF0000"
 }):SetWindows({
     text = "My GUI",
     size = UDim2.fromOffset(480, 300),
