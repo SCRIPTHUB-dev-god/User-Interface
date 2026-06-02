@@ -234,6 +234,7 @@ function Library:CreateWindow(options)
             boxFrame.BackgroundColor3 = Library.Theme.GroupBoxBg
             boxFrame.BorderSizePixel = 0
             boxFrame.AutomaticSize = Enum.AutomaticSize.Y
+            boxFrame.ClipsDescendants = true
 
             local boxCorner = Instance.new("UICorner", boxFrame)
             boxCorner.CornerRadius = UDim.new(0, 4)
@@ -243,7 +244,7 @@ function Library:CreateWindow(options)
             boxStroke.Thickness = 1
 
             local boxTitle = Instance.new("TextLabel", boxFrame)
-            boxTitle.Size = UDim2.new(1, -20, 0, 28)
+            boxTitle.Size = UDim2.new(1, -40, 0, 28)
             boxTitle.Position = UDim2.new(0, 10, 0, 0)
             boxTitle.Text = boxName
             boxTitle.Font = Enum.Font.GothamBold
@@ -251,6 +252,15 @@ function Library:CreateWindow(options)
             boxTitle.TextColor3 = Library.Theme.TextMuted
             boxTitle.TextXAlignment = Enum.TextXAlignment.Left
             boxTitle.BackgroundTransparency = 1
+
+            local toggleBtn = Instance.new("TextButton", boxFrame)
+            toggleBtn.Size = UDim2.new(0, 20, 0, 28)
+            toggleBtn.Position = UDim2.new(1, -30, 0, 0)
+            toggleBtn.BackgroundTransparency = 1
+            toggleBtn.Text = "▼"
+            toggleBtn.Font = Enum.Font.GothamMedium
+            toggleBtn.TextSize = 10
+            toggleBtn.TextColor3 = Library.Theme.TextMuted
 
             local elementContainer = Instance.new("Frame", boxFrame)
             elementContainer.Size = UDim2.new(1, -20, 0, 0)
@@ -263,6 +273,17 @@ function Library:CreateWindow(options)
             
             local paddingFix = Instance.new("UIPadding", elementContainer)
             paddingFix.PaddingBottom = UDim.new(0, 10)
+
+            local isOpen = true
+            toggleBtn.MouseButton1Click:Connect(function()
+                isOpen = not isOpen
+                elementContainer.Visible = isOpen
+                if isOpen then
+                    toggleBtn.Text = "▼"
+                else
+                    toggleBtn.Text = "►"
+                end
+            end)
 
             local boxActions = {}
 
