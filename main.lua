@@ -208,7 +208,7 @@ local contentContainer = Instance.new("Frame")
 contentContainer.Size = UDim2.new(1, -195, 1, -74)
 contentContainer.Position = UDim2.new(0, 182, 0, 42)
 contentContainer.BackgroundTransparency = 1
-contentContainer.ClipsDescendants = false
+contentContainer.ClipsDescendants = true
 contentContainer.Parent = mainUI
 
 local footer = Instance.new("Frame")
@@ -533,15 +533,21 @@ function library:window(conf)
 		btnStroke.Thickness = 1
 		btnStroke.Parent = tabBtn
 
+		local pageGroup = Instance.new("CanvasGroup")
+		pageGroup.Size = UDim2.new(1, 0, 1, 0)
+		pageGroup.BackgroundTransparency = 1
+		pageGroup.Visible = false
+		pageGroup.Parent = contentContainer
+
 		local page = Instance.new("ScrollingFrame")
 		page.Size = UDim2.new(1, 0, 1, 0)
 		page.BackgroundTransparency = 1
 		page.BorderSizePixel = 0
-		page.Visible = false
+		page.Visible = true
 		page.ScrollBarThickness = 0
 		page.CanvasSize = UDim2.new(0, 0, 0, 0)
 		page.ClipsDescendants = false
-		page.Parent = contentContainer
+		page.Parent = pageGroup
 
 		local pagePadding = Instance.new("UIPadding")
 		pagePadding.PaddingLeft = UDim.new(0, 6)
@@ -559,7 +565,7 @@ function library:window(conf)
 			page.CanvasSize = UDim2.new(0, 0, 0, pageLayout.AbsoluteContentSize.Y + 20)
 		end)
 
-		table.insert(pages, page)
+		table.insert(pages, pageGroup)
 		table.insert(tabs, tabBtn)
 		local thisTabIndex = #pages
 
@@ -568,7 +574,7 @@ function library:window(conf)
 			isTransitioning = true
 
 			local oldPage = pages[currentTabIndex]
-			local newPage = page
+			local newPage = pageGroup
 
 			for _, t in pairs(tabs) do
 				t.TextColor3 = Color3.fromRGB(160, 160, 165)
@@ -578,18 +584,36 @@ function library:window(conf)
 			tabBtn.UIStroke.Color = Color3.fromRGB(90, 90, 95)
 
 			if thisTabIndex < currentTabIndex then
-				newPage.Position = UDim2.new(-1, 0, 0, 0)
+				newPage.Position = UDim2.new(0, -15, 0, 0)
+				newPage.GroupAlpha = 0
 				newPage.Visible = true
-				tweenService:Create(oldPage, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(1, 0, 0, 0)}):Play()
-				local tweenNew = tweenService:Create(newPage, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)})
+				
+				tweenService:Create(oldPage, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+					Position = UDim2.new(0, 15, 0, 0),
+					GroupAlpha = 0
+				}):Play()
+				
+				local tweenNew = tweenService:Create(newPage, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+					Position = UDim2.new(0, 0, 0, 0),
+					GroupAlpha = 1
+				})
 				tweenNew:Play()
 				tweenNew.Completed:Wait()
 				oldPage.Visible = false
 			else
-				newPage.Position = UDim2.new(1, 0, 0, 0)
+				newPage.Position = UDim2.new(0, 15, 0, 0)
+				newPage.GroupAlpha = 0
 				newPage.Visible = true
-				tweenService:Create(oldPage, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(-1, 0, 0, 0)}):Play()
-				local tweenNew = tweenService:Create(newPage, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)})
+				
+				tweenService:Create(oldPage, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+					Position = UDim2.new(0, -15, 0, 0),
+					GroupAlpha = 0
+				}):Play()
+				
+				local tweenNew = tweenService:Create(newPage, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+					Position = UDim2.new(0, 0, 0, 0),
+					GroupAlpha = 1
+				})
 				tweenNew:Play()
 				tweenNew.Completed:Wait()
 				oldPage.Visible = false
@@ -600,7 +624,8 @@ function library:window(conf)
 		end)
 
 		if #pages == 1 then
-			page.Visible = true
+			pageGroup.Visible = true
+			pageGroup.GroupAlpha = 1
 			tabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 			tabBtn.UIStroke.Color = Color3.fromRGB(90, 90, 95)
 		end
