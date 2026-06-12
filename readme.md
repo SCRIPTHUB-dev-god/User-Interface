@@ -4,71 +4,66 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wav
 ```
 
 ```luau
-local Icarus = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wave-ui/refs/heads/main/main.lua"))()
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wave-ui/refs/heads/main/main.lua"))()
 
-local win = Icarus:SetWindows({
-    text = "My GUI",
-    theme = "DeepBlue",
-    size = UDim2.fromOffset(480, 300),
-    autoshow = true,
-    searchtopbar = true,
-    loadinggui = true
+library:toggleui({
+	title = "Buka Menu"
 })
 
-local tab = win:AddTab({
-    name = "Main",
-    icon = "home"
+local window = library:window({
+	title = "HCL Hub",
+	desc = "V7 Update Mobile",
+	footer = "Developer Team v1.0"
 })
 
-local gb = tab:AddLeftGroupbox({
-    name = "Features",
-    icon = "star"
+local mainTab = window:createtab({
+	title = "Utama"
 })
 
-gb:AddLabel({text = "Welcome!"})
-
-gb:AddButton({
-    text = "Click Me",
-    callback = function()
-        print("Button clicked!")
-    end
+local settingTab = window:createtab({
+	title = "Pengaturan"
 })
 
-gb:AddParagraph({
-    text = "Info",
-    description = "This is a paragraph with description"
+local leftGroup = mainTab:groupbox({
+	title = "Fitur Player",
+	show = true,
+	position = "left"
 })
 
-gb:AddToggle({
-    text = "Enable Feature",
-    default = true,
-    callback = function(value)
-        print("Toggled:", value)
-    end
+local rightGroup = mainTab:groupbox({
+	title = "Informasi",
+	show = true,
+	position = "right"
 })
 
-gb:AddSlider({
-    text = "Speed",
-    min = 0,
-    max = 100,
-    default = 50,
-    callback = function(value)
-        print("Slider:", value)
-    end
+leftGroup:createtoggle({
+	title = "Inf Jump",
+	default = false,
+	callback = function(val)
+		print("Inf Jump:", val)
+	end
 })
 
-gb:AddDropdown({
-    text = "Select Option",
-    callback = function()
-        print("Dropdown clicked")
-    end
+leftGroup:createslider({
+	title = "Speed",
+	min = 16,
+	max = 200,
+	default = 16,
+	callback = function(val)
+		print("Speed set:", val)
+	end
 })
 
-gb:AddDivider()
+rightGroup:createlabel({
+	title = "User: Premium"
+})
 
-gb:AddTextbox({
-    placeholder = "Type here...",
-    callback = function(text)
-        print("Text:", text)
-    end
-})```
+rightGroup:createdivider()
+
+rightGroup:createbutton({
+	title = "Hancurkan UI",
+	callback = function()
+		print("Tombol keluar dipicu")
+	end
+})
+```
