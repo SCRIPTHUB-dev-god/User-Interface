@@ -26,6 +26,12 @@ local leftGroup = combatTab:CreateGroupBox("Self Options", "left", "open")
 local rightGroup = combatTab:CreateGroupBox("Target Setup", "right", "open")
 local allsideGroup = combatTab:CreateGroupBox("Subsystem Router", "allside", "open")
 ```
+**tabbox**
+```luau
+local subTab1 = allsideGroup:tabbox("Main Frame")
+local subTab2 = allsideGroup:tabbox("Secondary Frame")
+```
+# ==========
 # element
 **button**
 ```luau
