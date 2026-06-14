@@ -15,61 +15,38 @@ local window = library:CreateWindow({
 	open = true
 })
 
-local mainTab = library:CreateTab("Combat")
-local miscTab = library:CreateTab("Misc")
+local mainTab = library:CreateTab("Main Features")
 
-local combatGroup = mainTab:CreateGroupBox("Main Frame", "allside", "open")
-local subGroup = mainTab:CreateGroupBox("Sub Frame", "left", "close")
+local leftGroup = mainTab:CreateGroupBox("Left Frame", "left", "open")
+local rightGroup = mainTab:CreateGroupBox("Right Frame", "right", "open")
+local allsideGroup = mainTab:CreateGroupBox("Full Frame", "allside", "open")
 
-combatGroup:CreateLabel("Target Settings")
-combatGroup:CreateParagraph("Pilih opsi di bawah ini untuk mengaktifkan fitur otomatisasi pada karakter.")
-combatGroup:CreateDivider()
+local groupTabs = allsideGroup:CreateTabs()
+local subTab1 = groupTabs:CreateTab("Combat")
+local subTab2 = groupTabs:CreateTab("Visuals")
 
-combatGroup:CreateButton("Kill All Players", function()
+subTab1:CreateButton("Kill All Players", function()
 	print("Executing Kill All...")
 end)
 
-combatGroup:CreateToggle("Auto Farm Aura", false, function(state)
-	print("Auto Farm status:", state)
+subTab1:CreateToggle("Aimbot", false, function(state)
+	print("Aimbot status:", state)
 end)
 
-combatGroup:CreateSlider("Aimbot Smoothness", 1, 10, 5, function(value)
-	print("Smoothness set to:", value)
+subTab2:CreateToggle("Player ESP", false, function(state)
+	print("ESP status:", state)
 end)
 
-combatGroup:CreateDropdown("Target Bone", {"Head", "HumanoidRootPart", "Torso"}, function(selected)
-	print("Targeting:", selected)
+subTab2:CreateColorPicker("ESP Color", Color3.fromRGB(0, 255, 120), function(color)
+	print("Color changed")
 end)
 
-combatGroup:CreateInput("Custom Speed Value", "Type speed...", function(text, enterPressed)
-	print("Input submitted:", text, "Pressed Enter:", enterPressed)
+leftGroup:CreateSlider("Walkspeed", 16, 250, 16, function(value)
+	print("Speed changed to:", value)
 end)
 
-local multiTabBox = subGroup:tabbox("Aimbot Config")
-local multiTabBox2 = subGroup:tabbox("ESP Config")
-
-multiTabBox:CreateLabel("Aimbot Sub-Settings")
-multiTabBox:CreateParagraph("Pengaturan sensitivitas tingkat lanjut.")
-multiTabBox:CreateDivider()
-
-multiTabBox:CreateButton("Reset Config", function()
-	print("Config Reset!")
-end)
-
-multiTabBox:CreateToggle("Team Check", true, function(state)
-	print("Team check:", state)
-end)
-
-multiTabBox:CreateSlider("FOV Radius", 30, 300, 100, function(value)
-	print("FOV Radius:", value)
-end)
-
-multiTabBox:CreateDropdown("Prediction Mode", {"Low", "Medium", "High"}, function(mode)
-	print("Prediction set to:", mode)
-end)
-
-multiTabBox:CreateInput("Blacklist User", "Username...", function(text)
-	print("Blacklisted:", text)
+rightGroup:CreateDropdown("Teleport to", {"Spawn", "Shop", "Arena"}, "Spawn", function(selected)
+	print("Teleporting to:", selected)
 end)
 
 ```
