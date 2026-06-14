@@ -3,6 +3,23 @@ local localPlayer = players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 local userInputService = game:GetService("UserInputService")
 local tweenService = game:GetService("TweenService")
+local runService = game:GetService("RunService")
+
+local executorName = "Unknown"
+local success, result = pcall(function()
+	if typeof(identifyexecutor) == "function" then
+		local name = identifyexecutor()
+		if typeof(name) == "string" then return name end
+	elseif typeof(getexecutorname) == "function" then
+		local name = getexecutorname()
+		if typeof(name) == "string" then return name end
+	end
+	return "Unknown"
+end)
+
+if success and result then
+	executorName = result
+end
 
 local library = {}
 
@@ -68,25 +85,25 @@ pfpCorner.CornerRadius = UDim.new(1, 0)
 pfpCorner.Parent = pfpLabel
 
 task.spawn(function()
-	local success, content = pcall(function()
+	local thumbnailSuccess, content = pcall(function()
 		return players:GetUserThumbnailAsync(localPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
 	end)
-	if success then
+	if thumbnailSuccess then
 		pfpLabel.Image = content
 	end
 end)
 
 local animFrame = Instance.new("Frame")
 animFrame.Name = "AnimFrame"
-animFrame.Size = UDim2.new(0, 120, 1, 0)
-animFrame.Position = UDim2.new(0, 44, 0, 0)
+animFrame.Size = UDim2.new(0, 100, 1, 0)
+animFrame.Position = UDim2.new(0, 48, 0, 0)
 animFrame.BackgroundTransparency = 1
 animFrame.ClipsDescendants = true
 animFrame.Parent = topBar
 
 local waveText = Instance.new("TextLabel")
 waveText.Name = "WaveText"
-waveText.Size = UDim2.new(0, 100, 1, 0)
+waveText.Size = UDim2.new(1, 0, 1, 0)
 waveText.Position = UDim2.new(0, -100, 0, 0)
 waveText.BackgroundTransparency = 1
 waveText.Text = "wave ui"
@@ -94,6 +111,7 @@ waveText.TextColor3 = Color3.fromRGB(255, 255, 255)
 waveText.TextSize = 14
 waveText.Font = Enum.Font.GothamBold
 waveText.TextXAlignment = Enum.TextXAlignment.Left
+waveText.TextYAlignment = Enum.TextYAlignment.Center
 waveText.Parent = animFrame
 
 task.spawn(function()
@@ -108,28 +126,149 @@ end)
 
 local waveDivider = Instance.new("Frame")
 waveDivider.Name = "WaveDivider"
-waveDivider.Size = UDim2.new(0, 168, 0.5, -9)
-waveDivider.Position = UDim2.new(0, 168, 0.5, -9)
+waveDivider.Size = UDim2.new(0, 1, 0, 16)
+waveDivider.Position = UDim2.new(0, 154, 0.5, -8)
 waveDivider.BackgroundColor3 = Color3.fromRGB(55, 55, 60)
 waveDivider.BorderSizePixel = 0
 waveDivider.Parent = topBar
 
 local tagsContainer = Instance.new("Frame")
 tagsContainer.Name = "TagsContainer"
-tagsContainer.Size = UDim2.new(0, 130, 0, 18)
-tagsContainer.Position = UDim2.new(0, 175, 0.5, -9)
+tagsContainer.Size = UDim2.new(0, 340, 0, 20)
+tagsContainer.Position = UDim2.new(0, 162, 0.5, -10)
 tagsContainer.BackgroundTransparency = 1
 tagsContainer.Parent = topBar
 
 local tagsLayout = Instance.new("UIListLayout")
 tagsLayout.FillDirection = Enum.FillDirection.Horizontal
 tagsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-tagsLayout.Padding = UDim.new(0, 5)
+tagsLayout.Padding = UDim.new(0, 6)
+tagsLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 tagsLayout.Parent = tagsContainer
+
+local apiBuiltInDivider = Instance.new("Frame")
+apiBuiltInDivider.Name = "ApiBuiltInDivider"
+apiBuiltInDivider.Size = UDim2.new(0, 1, 0, 14)
+apiBuiltInDivider.BackgroundColor3 = Color3.fromRGB(55, 55, 60)
+apiBuiltInDivider.BorderSizePixel = 0
+apiBuiltInDivider.LayoutOrder = 4
+apiBuiltInDivider.Visible = false
+apiBuiltInDivider.Parent = tagsContainer
+
+local execFrame = Instance.new("Frame")
+execFrame.Name = "ExecutorTag"
+execFrame.AutomaticSize = Enum.AutomaticSize.X
+execFrame.Size = UDim2.new(0, 0, 1, 0)
+execFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+execFrame.LayoutOrder = 5
+execFrame.Parent = tagsContainer
+
+local execPadding = Instance.new("UIPadding")
+execPadding.PaddingLeft = UDim.new(0, 8)
+execPadding.PaddingRight = UDim.new(0, 8)
+execPadding.Parent = execFrame
+
+local execCorner = Instance.new("UICorner")
+execCorner.CornerRadius = UDim.new(0, 5)
+execCorner.Parent = execFrame
+
+local execStroke = Instance.new("UIStroke")
+execStroke.Color = Color3.fromRGB(55, 55, 60)
+execStroke.Thickness = 1
+execStroke.Parent = execFrame
+
+local execLabel = Instance.new("TextLabel")
+execLabel.AutomaticSize = Enum.AutomaticSize.X
+execLabel.Size = UDim2.new(0, 0, 1, 0)
+execLabel.BackgroundTransparency = 1
+execLabel.Text = executorName
+execLabel.TextColor3 = Color3.fromRGB(255, 170, 0)
+execLabel.TextSize = 9
+execLabel.Font = Enum.Font.GothamBold
+execLabel.TextXAlignment = Enum.TextXAlignment.Center
+execLabel.TextYAlignment = Enum.TextYAlignment.Center
+execLabel.Parent = execFrame
+
+local fpsFrame = Instance.new("Frame")
+fpsFrame.Name = "FPSTag"
+fpsFrame.Size = UDim2.new(0, 48, 1, 0)
+fpsFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+fpsFrame.LayoutOrder = 6
+fpsFrame.Parent = tagsContainer
+
+local fpsCorner = Instance.new("UICorner")
+fpsCorner.CornerRadius = UDim.new(0, 5)
+fpsCorner.Parent = fpsFrame
+
+local fpsStroke = Instance.new("UIStroke")
+fpsStroke.Color = Color3.fromRGB(55, 55, 60)
+fpsStroke.Thickness = 1
+fpsStroke.Parent = fpsFrame
+
+local fpsLabel = Instance.new("TextLabel")
+fpsLabel.Size = UDim2.new(1, 0, 1, 0)
+fpsLabel.BackgroundTransparency = 1
+fpsLabel.Text = "FPS: 0"
+fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 140)
+fpsLabel.TextSize = 9
+fpsLabel.Font = Enum.Font.GothamBold
+fpsLabel.TextXAlignment = Enum.TextXAlignment.Center
+fpsLabel.TextYAlignment = Enum.TextYAlignment.Center
+fpsLabel.Parent = fpsFrame
+
+local clockFrame = Instance.new("Frame")
+clockFrame.Name = "ClockTag"
+clockFrame.Size = UDim2.new(0, 64, 1, 0)
+clockFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+clockFrame.LayoutOrder = 7
+clockFrame.Parent = tagsContainer
+
+local clockCorner = Instance.new("UICorner")
+clockCorner.CornerRadius = UDim.new(0, 5)
+clockCorner.Parent = clockFrame
+
+local clockStroke = Instance.new("UIStroke")
+clockStroke.Color = Color3.fromRGB(55, 55, 60)
+clockStroke.Thickness = 1
+clockStroke.Parent = clockFrame
+
+local clockLabel = Instance.new("TextLabel")
+clockLabel.Size = UDim2.new(1, 0, 1, 0)
+clockLabel.BackgroundTransparency = 1
+clockLabel.Text = "00:00:00"
+clockLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
+clockLabel.TextSize = 9
+clockLabel.Font = Enum.Font.GothamBold
+clockLabel.TextXAlignment = Enum.TextXAlignment.Center
+clockLabel.TextYAlignment = Enum.TextYAlignment.Center
+clockLabel.Parent = clockFrame
+
+local builtInTopbarDivider = Instance.new("Frame")
+builtInTopbarDivider.Name = "BuiltInTopbarDivider"
+builtInTopbarDivider.Size = UDim2.new(0, 1, 0, 14)
+builtInTopbarDivider.BackgroundColor3 = Color3.fromRGB(55, 55, 60)
+builtInTopbarDivider.BorderSizePixel = 0
+builtInTopbarDivider.LayoutOrder = 8
+builtInTopbarDivider.Parent = tagsContainer
+
+task.spawn(function()
+	local fpsCount = 0
+	local nextUpdate = os.clock() + 1
+	runService.RenderStepped:Connect(function()
+		fpsCount = fpsCount + 1
+		local currentTime = os.clock()
+		if currentTime >= nextUpdate then
+			clockLabel.Text = os.date("%X")
+			fpsLabel.Text = "FPS: " .. fpsCount
+			fpsCount = 0
+			nextUpdate = currentTime + 1
+		end
+	end)
+end)
 
 local redBtn = Instance.new("TextButton")
 redBtn.Size = UDim2.new(0, 13, 0, 13)
-redBtn.Position = UDim2.new(1, -26, 0, 11)
+redBtn.Position = UDim2.new(1, -24, 0.5, -6)
 redBtn.BackgroundColor3 = Color3.fromRGB(255, 95, 85)
 redBtn.Text = ""
 redBtn.Parent = topBar
@@ -145,7 +284,7 @@ redStroke.Parent = redBtn
 
 local yellowBtn = Instance.new("TextButton")
 yellowBtn.Size = UDim2.new(0, 13, 0, 13)
-yellowBtn.Position = UDim2.new(1, -52, 0, 11)
+yellowBtn.Position = UDim2.new(1, -44, 0.5, -6)
 yellowBtn.BackgroundColor3 = Color3.fromRGB(255, 190, 45)
 yellowBtn.Text = ""
 yellowBtn.Parent = topBar
@@ -196,10 +335,15 @@ title.Position = UDim2.new(0, 14, 0, 14)
 title.BackgroundTransparency = 1
 title.Text = "MAIN UI"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.TextSize = 16
+title.TextScaled = true
 title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = sideBar
+
+local titleConstraint = Instance.new("UITextSizeConstraint")
+titleConstraint.MaxTextSize = 16
+titleConstraint.MinTextSize = 9
+titleConstraint.Parent = title
 
 local desc = Instance.new("TextLabel")
 desc.Size = UDim2.new(1, -24, 0, 14)
@@ -207,10 +351,15 @@ desc.Position = UDim2.new(0, 14, 0, 38)
 desc.BackgroundTransparency = 1
 desc.Text = "Mobile Optimization"
 desc.TextColor3 = Color3.fromRGB(115, 115, 125)
-desc.TextSize = 11
+desc.TextScaled = true
 desc.Font = Enum.Font.GothamMedium
 desc.TextXAlignment = Enum.TextXAlignment.Left
 desc.Parent = sideBar
+
+local descConstraint = Instance.new("UITextSizeConstraint")
+descConstraint.MaxTextSize = 11
+descConstraint.MinTextSize = 7
+descConstraint.Parent = desc
 
 local mainDivider = Instance.new("Frame")
 mainDivider.Size = UDim2.new(1, -28, 0, 1)
@@ -569,48 +718,44 @@ end
 
 function library:SetTopTags(tagsList)
 	for _, child in pairs(tagsContainer:GetChildren()) do
-		if child:IsA("Frame") then
+		if child.Name == "CustomTag" then
 			child:Destroy()
 		end
 	end
 	local count = #tagsList
-	if count < 1 then return end
-	if count > 3 then count = 3 end
-	local totalWidth = 130
-	local padding = 5
-	local itemWidth = 0
-	if count == 1 then
-		itemWidth = totalWidth
-	elseif count == 2 then
-		itemWidth = (totalWidth - padding) / 2
-	elseif count == 3 then
-		itemWidth = (totalWidth - (padding * 2)) / 3
+	if count < 1 then 
+		apiBuiltInDivider.Visible = false
+		return 
 	end
+	if count > 3 then count = 3 end
+	apiBuiltInDivider.Visible = true
+	
 	for i = 1, count do
 		local tagFrame = Instance.new("Frame")
-		tagFrame.Size = UDim2.new(0, itemWidth, 1, 0)
-		tagFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 38)
-		tagFrame.BorderSizePixel = 0
+		tagFrame.Name = "CustomTag"
+		tagFrame.Size = UDim2.new(0, 52, 1, 0)
+		tagFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+		tagFrame.LayoutOrder = i
 		tagFrame.Parent = tagsContainer
 		
 		local tagCorner = Instance.new("UICorner")
-		tagCorner.CornerRadius = UDim.new(0, 14)
+		tagCorner.CornerRadius = UDim.new(0, 5)
 		tagCorner.Parent = tagFrame
 		
 		local tagStroke = Instance.new("UIStroke")
-		tagStroke.Color = Color3.fromRGB(60, 60, 65)
+		tagStroke.Color = Color3.fromRGB(55, 55, 60)
 		tagStroke.Thickness = 1
 		tagStroke.Parent = tagFrame
 		
 		local tagLabel = Instance.new("TextLabel")
-		tagLabel.Size = UDim2.new(1, -6, 1, 0)
-		tagLabel.Position = UDim2.new(0, 3, 0, 0)
+		tagLabel.Size = UDim2.new(1, 0, 1, 0)
 		tagLabel.BackgroundTransparency = 1
 		tagLabel.Text = tostring(tagsList[i])
-		tagLabel.TextColor3 = Color3.fromRGB(230, 230, 235)
+		tagLabel.TextColor3 = Color3.fromRGB(220, 220, 225)
 		tagLabel.TextSize = 9
 		tagLabel.Font = Enum.Font.GothamBold
-		tagLabel.TextWrapped = true
+		tagLabel.TextXAlignment = Enum.TextXAlignment.Center
+		tagLabel.TextYAlignment = Enum.TextYAlignment.Center
 		tagLabel.Parent = tagFrame
 	end
 end
@@ -1009,7 +1154,7 @@ function library:CreateTab(tabName)
 			dropFrame.Size = UDim2.new(1, 0, 0, 24)
 			dropFrame.BackgroundColor3 = Color3.fromRGB(34, 34, 36)
 			dropFrame.ClipsDescendants = true
-			dropFrame.Parent = boxContent
+			dropFrame.Parent = dropFrame
 			Instance.new("UICorner", dropFrame).CornerRadius = UDim.new(0, 5)
 			local str = Instance.new("UIStroke", dropFrame)
 			str.Color = Color3.fromRGB(50, 50, 55)
@@ -1150,7 +1295,7 @@ function library:CreateTab(tabName)
 					end
 				end
 				groupTabBar = Instance.new("Frame")
-				groupTabBar.Size = UDim2.new(1, 0, 0, 22)
+				groupTabBar.Size = UDim2.new(1, 0, 0, 26)
 				groupTabBar.BackgroundTransparency = 1
 				groupTabBar.LayoutOrder = 1
 				groupTabBar.Parent = boxContent
@@ -1205,15 +1350,10 @@ function library:CreateTab(tabName)
 			local totalTabs = #tabBoxButtons
 			local padTotal = (totalTabs - 1) * 4
 			
-			if totalTabs >= 2 then
-				groupTabBar.Size = UDim2.new(1, 0, 0, 14)
-				for _, btn in pairs(tabBoxButtons) do
-					btn.Size = UDim2.new(1 / totalTabs, -(padTotal / totalTabs), 1, 0)
-					btn.TextSize = 9
-				end
-			else
-				groupTabBar.Size = UDim2.new(1, 0, 0, 22)
-				tabBtn.Size = UDim2.new(1, 0, 1, 0)
+			groupTabBar.Size = UDim2.new(1, 0, 0, 26)
+			for _, btn in pairs(tabBoxButtons) do
+				btn.Size = UDim2.new(1 / totalTabs, -(padTotal / totalTabs), 1, 0)
+				btn.TextSize = 10
 			end
 			
 			if thisIdx == 1 then
