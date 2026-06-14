@@ -529,6 +529,9 @@ function library:CreateWindow(config)
 	if config.desc then 
 		desc.Text = config.desc
 	end
+	if config.footer then
+		footerText.Text = config.footer
+	end
 	if config.open ~= nil then
 		if config.open == true then
 			mainUI.Visible = true
@@ -807,7 +810,8 @@ function library:CreateTab(tabName)
 			if isExpanded then 
 				groupBox.Size = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, currentCalculatedHeight)
 				
-				if layoutType ~= "allside" and groupBox.Parent:IsA("Frame") then 					local row = groupBox.Parent
+				if layoutType ~= "allside" and groupBox.Parent:IsA("Frame") then 
+					local row = groupBox.Parent
 					local maxTarget = 30
 					for _, child in pairs(row:GetChildren()) do 
 						if child:IsA("Frame") and child.Size.Y.Offset > maxTarget then 
