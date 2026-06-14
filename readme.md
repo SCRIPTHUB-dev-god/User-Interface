@@ -7,21 +7,14 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wav
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wave-ui/refs/heads/main/main.lua"))()
 
 local window = library:CreateWindow({
-	title = "Premium Hub",
-	desc = "Mobile Optimization",
-	footer = "wave ui: v1.3",
-	open = true
-})
-
-library:SetTopTags({"MAIN", "VIP", "7D"})
-
-local window = library:CreateWindow({
 	title = "New Premium Hub",
 	desc = "VVIP Client Version",
 	toggletitle = "Maximize UI",
 	footer = "wave ui: v1.4 patched",
 	open = true
 })
+
+library:SetTopTags({"MAIN", "VIP", "7D"})
 
 local mainTab = window:CreateTab("Combat")
 local miscTab = window:CreateTab("Misc")
