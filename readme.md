@@ -10,11 +10,7 @@ library:toggleui({
 	title = "Buka Menu"
 })
 
-local window = library:window({
-	title = "HCL Hub",
-	desc = "V7 Update Mobile",
-	footer = "Developer Team v1.0"
-})
+local window = library:CreateWindow({title = "Premium Hub", desc = "V1.3 Mobile"})
 
 local mainTab = window:createtab({
 	title = "Utama"
