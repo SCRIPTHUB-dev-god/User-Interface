@@ -1,6 +1,7 @@
-# load ui
+# wave ui library
+**get library**
 ```luau
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wave-ui/refs/heads/main/main.lua"))()
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wave-ui/refs/heads/main/library/wave-ui.lua"))()
 ```
 **window**
 ```luau
