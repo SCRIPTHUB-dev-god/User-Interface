@@ -27,6 +27,12 @@ local rightGroup = combatTab:CreateGroupBox("Target Setup", "right", "open")
 local allsideGroup = combatTab:CreateGroupBox("Subsystem Router", "allside", "open")
 ```
 # element
+**button**
+```luau
+leftGroup:CreateButton("Teleport to Base", function()
+	print("Teleporting...")
+end)
+```
 **toggle**
 ```luau
 leftGroup:CreateToggle("Fly System", false, function(state)
@@ -50,4 +56,8 @@ end)
 rightGroup:CreateDropdown("Hit Priority", {"Head", "HumanoidRootPart", "Torso"}, function(selection)
 	print("Dropdown selection:", selection)
 end)
+```
+**divider**
+```luau
+leftGroup:CreateDivider()
 ```
