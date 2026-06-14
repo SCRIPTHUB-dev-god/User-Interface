@@ -6,60 +6,79 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wav
 ```luau
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/wave-ui/refs/heads/main/main.lua"))()
 
-library:toggleui({
-	title = "Buka Menu"
+local window = library:CreateWindow({
+	title = "Premium Hub",
+	desc = "Mobile Optimization",
+	footer = "wave ui: v1.3",
+	open = true
 })
 
-local window = library:CreateWindow({title = "Premium Hub", desc = "V1.3 Mobile"})
+library:SetTopTags({"MAIN", "VIP", "7D"})
 
-local mainTab = window:createtab({
-	title = "Utama"
+local window = library:CreateWindow({
+	title = "New Premium Hub",
+	desc = "VVIP Client Version",
+	toggletitle = "Maximize UI",
+	footer = "wave ui: v1.4 patched",
+	open = true
 })
 
-local settingTab = window:createtab({
-	title = "Pengaturan"
-})
+local mainTab = window:CreateTab("Combat")
+local miscTab = window:CreateTab("Misc")
 
-local leftGroup = mainTab:groupbox({
-	title = "Fitur Player",
-	show = true,
-	position = "left"
-})
+local combatGroup = mainTab:CreateGroupBox("Main Frame", "allside", "open")
+local subGroup = mainTab:CreateGroupBox("Sub Frame", "left", "close")
 
-local rightGroup = mainTab:groupbox({
-	title = "Informasi",
-	show = true,
-	position = "right"
-})
+combatGroup:CreateLabel("Target Settings")
+combatGroup:CreateParagraph("Pilih opsi di bawah ini untuk mengaktifkan fitur otomatisasi pada karakter.")
+combatGroup:CreateDivider()
 
-leftGroup:createtoggle({
-	title = "Inf Jump",
-	default = false,
-	callback = function(val)
-		print("Inf Jump:", val)
-	end
-})
+combatGroup:CreateButton("Kill All Players", function()
+	print("Executing Kill All...")
+end)
 
-leftGroup:createslider({
-	title = "Speed",
-	min = 16,
-	max = 200,
-	default = 16,
-	callback = function(val)
-		print("Speed set:", val)
-	end
-})
+combatGroup:CreateToggle("Auto Farm Aura", false, function(state)
+	print("Auto Farm status:", state)
+end)
 
-rightGroup:createlabel({
-	title = "User: Premium"
-})
+combatGroup:CreateSlider("Aimbot Smoothness", 1, 10, 5, function(value)
+	print("Smoothness set to:", value)
+end)
 
-rightGroup:createdivider()
+combatGroup:CreateDropdown("Target Bone", {"Head", "HumanoidRootPart", "Torso"}, function(selected)
+	print("Targeting:", selected)
+end)
 
-rightGroup:createbutton({
-	title = "Hancurkan UI",
-	callback = function()
-		print("Tombol keluar dipicu")
-	end
-})
+combatGroup:CreateInput("Custom Speed Value", "Type speed...", function(text, enterPressed)
+	print("Input submitted:", text, "Pressed Enter:", enterPressed)
+end)
+
+local multiTabBox = subGroup:tabbox()
+local aimbotPage = multiTabBox:AddTab("Aimbot Config")
+local espPage = multiTabBox:AddTab("ESP Config")
+
+aimbotPage:CreateLabel("Aimbot Sub-Settings")
+aimbotPage:CreateParagraph("Pengaturan sensitivitas tingkat lanjut.")
+aimbotPage:CreateDivider()
+
+aimbotPage:CreateButton("Reset Config", function()
+	print("Config Reset!")
+end)
+
+aimbotPage:CreateToggle("Team Check", true, function(state)
+	print("Team check:", state)
+end)
+
+aimbotPage:CreateSlider("FOV Radius", 30, 300, 100, function(value)
+	print("FOV Radius:", value)
+end)
+
+aimbotPage:CreateDropdown("Prediction Mode", {"Low", "Medium", "High"}, function(mode)
+	print("Prediction set to:", mode)
+end)
+
+aimbotPage:CreateInput("Blacklist User", "Username...", function(text)
+	print("Blacklisted:", text)
+end)
+
 ```
