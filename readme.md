@@ -31,7 +31,7 @@ local allsideGroup = combatTab:CreateGroupBox("Subsystem Router", "allside", "op
 local subTab1 = allsideGroup:tabbox("Main Frame")
 local subTab2 = allsideGroup:tabbox("Secondary Frame")
 ```
-# ==========
+# ================
 # element
 **button**
 ```luau
@@ -39,10 +39,33 @@ leftGroup:CreateButton("Teleport to Base", function()
 	print("Teleporting...")
 end)
 ```
+**dual button**
+```luau
+leftGroup:CreateDualButton({
+	Button1 = {
+		Text = "Kill All",
+		Callback = function()
+			print("Kill All Triggered")
+		end
+	},
+	Button2 = {
+		Text = "Bring All",
+		Callback = function()
+			print("Bring All Triggered")
+		end
+	}
+})
+```
 **toggle**
 ```luau
 leftGroup:CreateToggle("Fly System", false, function(state)
 	print("Fly state updated:", state)
+end)
+```
+**check box**
+```luau
+leftGroup:CreateCheckbox("Silent Aim", true, function(state)
+	print("Silent Aim status:", state)
 end)
 ```
 **slider**
@@ -59,9 +82,17 @@ end)
 ```
 **dropdown**
 ```luau
-rightGroup:CreateDropdown("Hit Priority", {"Head", "HumanoidRootPart", "Torso"}, function(selection)
-	print("Dropdown selection:", selection)
-end)
+rightGroup:CreateDropdown({
+	text = "Hit Priority",
+	list = {"Head", "HumanoidRootPart", "Torso"},
+	multi = true,
+	callback = function(selection)
+		print("Selected priorities:")
+		for i, v in pairs(selection) do
+			print(i, v)
+		end
+	end
+})
 ```
 **divider**
 ```luau
