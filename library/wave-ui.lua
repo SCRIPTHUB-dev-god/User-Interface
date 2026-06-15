@@ -146,15 +146,6 @@ tagsLayout.Padding = UDim.new(0, 6)
 tagsLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 tagsLayout.Parent = tagsContainer
 
-local apiBuiltInDivider = Instance.new("Frame")
-apiBuiltInDivider.Name = "ApiBuiltInDivider"
-apiBuiltInDivider.Size = UDim2.new(0, 1, 0, 14)
-apiBuiltInDivider.BackgroundColor3 = Color3.fromRGB(55, 55, 60)
-apiBuiltInDivider.BorderSizePixel = 0
-apiBuiltInDivider.LayoutOrder = 4
-apiBuiltInDivider.Visible = false
-apiBuiltInDivider.Parent = tagsContainer
-
 local execFrame = Instance.new("Frame")
 execFrame.Name = "ExecutorTag"
 execFrame.AutomaticSize = Enum.AutomaticSize.X
@@ -221,14 +212,14 @@ clockFrame.Name = "ClockTag"
 clockFrame.Size = UDim2.new(0, 64, 1, 0)
 clockFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
 clockFrame.LayoutOrder = 7
-clockFrame.Parent = tagsContainer
+clockFrame.Parent = clockFrame.Parent or tagsContainer
 
 local clockCorner = Instance.new("UICorner")
 clockCorner.CornerRadius = UDim.new(0, 5)
 clockCorner.Parent = clockFrame
 
 local clockStroke = Instance.new("UIStroke")
-clockStroke.Color = Color3.fromRGB(55, 55, 60)
+clockStroke.Color = Color3.fromRGB(0, 180, 255)
 clockStroke.Thickness = 1
 clockStroke.Parent = clockFrame
 
@@ -249,7 +240,38 @@ builtInTopbarDivider.Size = UDim2.new(0, 1, 0, 14)
 builtInTopbarDivider.BackgroundColor3 = Color3.fromRGB(55, 55, 60)
 builtInTopbarDivider.BorderSizePixel = 0
 builtInTopbarDivider.LayoutOrder = 8
+builtInTopbarDivider.Visible = false
 builtInTopbarDivider.Parent = tagsContainer
+
+local searchFrame = Instance.new("Frame")
+searchFrame.Name = "SearchBar"
+searchFrame.Size = UDim2.new(0, 100, 0, 20)
+searchFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+searchFrame.LayoutOrder = 9
+searchFrame.Visible = true
+searchFrame.Parent = tagsContainer
+
+local searchCorner = Instance.new("UICorner")
+searchCorner.CornerRadius = UDim.new(0, 5)
+searchCorner.Parent = searchFrame
+
+local searchStroke = Instance.new("UIStroke")
+searchStroke.Color = Color3.fromRGB(55, 55, 60)
+searchStroke.Thickness = 1
+searchStroke.Parent = searchFrame
+
+local searchBox = Instance.new("TextBox")
+searchBox.Size = UDim2.new(1, -10, 1, 0)
+searchBox.Position = UDim2.new(0, 5, 0, 0)
+searchBox.BackgroundTransparency = 1
+searchBox.Text = ""
+searchBox.PlaceholderText = "Search..."
+searchBox.PlaceholderColor3 = Color3.fromRGB(100, 100, 105)
+searchBox.TextColor3 = Color3.fromRGB(220, 220, 225)
+searchBox.TextSize = 9
+searchBox.Font = Enum.Font.GothamMedium
+searchBox.ClearTextOnFocus = true
+searchBox.Parent = searchFrame
 
 task.spawn(function()
 	local fpsCount = 0
@@ -724,18 +746,20 @@ function library:SetTopTags(tagsList)
 	end
 	local count = #tagsList
 	if count < 1 then 
-		apiBuiltInDivider.Visible = false
+		builtInTopbarDivider.Visible = false
+		searchFrame.Visible = true
 		return 
 	end
 	if count > 3 then count = 3 end
-	apiBuiltInDivider.Visible = true
+	builtInTopbarDivider.Visible = true
+	searchFrame.Visible = false
 	
 	for i = 1, count do
 		local tagFrame = Instance.new("Frame")
 		tagFrame.Name = "CustomTag"
 		tagFrame.Size = UDim2.new(0, 52, 1, 0)
 		tagFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
-		tagFrame.LayoutOrder = i
+		tagFrame.LayoutOrder = 9 + i
 		tagFrame.Parent = tagsContainer
 		
 		local tagCorner = Instance.new("UICorner")
@@ -857,6 +881,7 @@ function library:CreateTab(tabName)
 			isExpanded = false
 		end
 		local groupBox = Instance.new("Frame")
+		groupBox.Name = "GroupBox"
 		groupBox.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
 		groupBox.BorderSizePixel = 0
 		groupBox.ClipsDescendants = true
@@ -871,6 +896,7 @@ function library:CreateTab(tabName)
 		groupStroke.Parent = groupBox
 		
 		local groupLabel = Instance.new("TextLabel")
+		groupLabel.Name = "GroupTitle"
 		groupLabel.Size = UDim2.new(1, -40, 0, 20)
 		groupLabel.Position = UDim2.new(0, 10, 0, 6)
 		groupLabel.BackgroundTransparency = 1
@@ -929,6 +955,8 @@ function library:CreateTab(tabName)
 		local currentTabBoxIndex = 1
 		local activeTabPageLayout = nil
 		
+		local currentDualButtonRow = nil
+
 		local function updateDimensions()
 			local currentScale = uiScale.Scale
 			local adjustedContentHeight = 0
@@ -1022,25 +1050,97 @@ function library:CreateTab(tabName)
 		
 		local innerElements = {}
 		
-		function innerElements:CreateButton(text, callback)
+		function innerElements:CreateButton(config, callback)
 			if hasTabs then return end
+			local titleText = ""
+			local cb = callback
+			if type(config) == "table" then
+				titleText = config.title or config.text or ""
+				cb = config.callback
+			else
+				titleText = config or ""
+			end
+
 			local btn = Instance.new("TextButton")
-			btn.Size = UDim2.new(1, 0, 0, 24)
 			btn.BackgroundColor3 = Color3.fromRGB(36, 36, 38)
-			btn.Text = text
+			btn.Text = titleText
 			btn.TextColor3 = Color3.fromRGB(230, 230, 235)
 			btn.TextSize = 11
 			btn.Font = Enum.Font.GothamMedium
-			btn.Parent = boxContent
 			Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
 			local str = Instance.new("UIStroke", btn)
 			str.Color = Color3.fromRGB(52, 52, 56)
-			btn.MouseButton1Click:Connect(function() if callback then callback() end end)
+			btn.MouseButton1Click:Connect(function() if cb then cb() end end)
+
+			if currentDualButtonRow and not currentDualButtonRow:GetAttribute("RightButtonTaken") then
+				btn.Size = UDim2.new(0.49, 0, 1, 0)
+				btn.Position = UDim2.new(0.51, 0, 0, 0)
+				btn.Parent = currentDualButtonRow
+				currentDualButtonRow:SetAttribute("RightButtonTaken", true)
+				currentDualButtonRow = nil
+			else
+				currentDualButtonRow = Instance.new("Frame")
+				currentDualButtonRow.Size = UDim2.new(1, 0, 0, 24)
+				currentDualButtonRow.BackgroundTransparency = 1
+				currentDualButtonRow.Parent = boxContent
+				currentDualButtonRow:SetAttribute("RightButtonTaken", false)
+				
+				btn.Size = UDim2.new(0.49, 0, 1, 0)
+				btn.Position = UDim2.new(0, 0, 0, 0)
+				btn.Parent = currentDualButtonRow
+			end
 			return btn
+		end
+
+		function innerElements:CreateDualButton(config, cb1, text2, cb2)
+			currentDualButtonRow = nil
+			local row = Instance.new("Frame")
+			row.Size = UDim2.new(1, 0, 0, 24)
+			row.BackgroundTransparency = 1
+			row.Parent = boxContent
+			local t1, t2 = "Button 1", "Button 2"
+			local c1, c2 = cb1, cb2
+			if type(config) == "table" then
+				t1 = config.Text1 or (config.Button1 and config.Button1.Text) or "Button 1"
+				c1 = config.Callback1 or (config.Button1 and config.Button1.Callback) or nil
+				t2 = config.Text2 or (config.Button2 and config.Button2.Text) or "Button 2"
+				c2 = config.Callback2 or (config.Button2 and config.Button2.Callback) or nil
+			else
+				t1 = config or "Button 1"
+				t2 = text2 or "Button 2"
+			end
+			local btn1 = Instance.new("TextButton")
+			btn1.Size = UDim2.new(0.49, 0, 1, 0)
+			btn1.Position = UDim2.new(0, 0, 0, 0)
+			btn1.BackgroundColor3 = Color3.fromRGB(36, 36, 38)
+			btn1.Text = t1
+			btn1.TextColor3 = Color3.fromRGB(230, 230, 235)
+			btn1.TextSize = 11
+			btn1.Font = Enum.Font.GothamMedium
+			btn1.Parent = row
+			Instance.new("UICorner", btn1).CornerRadius = UDim.new(0, 5)
+			local str1 = Instance.new("UIStroke", btn1)
+			str1.Color = Color3.fromRGB(52, 52, 56)
+			btn1.MouseButton1Click:Connect(function() if c1 then c1() end end)
+			local btn2 = Instance.new("TextButton")
+			btn2.Size = UDim2.new(0.49, 0, 1, 0)
+			btn2.Position = UDim2.new(0.51, 0, 0, 0)
+			btn2.BackgroundColor3 = Color3.fromRGB(36, 36, 38)
+			btn2.Text = t2
+			btn2.TextColor3 = Color3.fromRGB(230, 230, 235)
+			btn2.TextSize = 11
+			btn2.Font = Enum.Font.GothamMedium
+			btn2.Parent = row
+			Instance.new("UICorner", btn2).CornerRadius = UDim.new(0, 5)
+			local str2 = Instance.new("UIStroke", btn2)
+			str2.Color = Color3.fromRGB(52, 52, 56)
+			btn2.MouseButton1Click:Connect(function() if c2 then c2() end end)
+			return row
 		end
 		
 		function innerElements:CreateToggle(text, default, callback)
 			if hasTabs then return end
+			currentDualButtonRow = nil
 			local toggleFrame = Instance.new("Frame")
 			toggleFrame.Size = UDim2.new(1, 0, 0, 24)
 			toggleFrame.BackgroundTransparency = 1
@@ -1080,9 +1180,56 @@ function library:CreateTab(tabName)
 			end)
 			return toggleFrame
 		end
+
+		function innerElements:CreateCheckbox(text, default, callback)
+			if hasTabs then return end
+			currentDualButtonRow = nil
+			local checkboxFrame = Instance.new("Frame")
+			checkboxFrame.Size = UDim2.new(1, 0, 0, 24)
+			checkboxFrame.BackgroundTransparency = 1
+			checkboxFrame.Parent = boxContent
+			
+			local lbl = Instance.new("TextLabel")
+			lbl.Size = UDim2.new(1, -30, 1, 0)
+			lbl.BackgroundTransparency = 1
+			lbl.Text = text
+			lbl.TextColor3 = Color3.fromRGB(210, 210, 215)
+			lbl.TextSize = 11
+			lbl.Font = Enum.Font.GothamMedium
+			lbl.TextXAlignment = Enum.TextXAlignment.Left
+			lbl.Parent = checkboxFrame
+			
+			local box = Instance.new("TextButton")
+			box.Size = UDim2.new(0, 16, 0, 16)
+			box.Position = UDim2.new(1, -22, 0.5, -8)
+			box.BackgroundColor3 = Color3.fromRGB(36, 36, 38)
+			box.Text = ""
+			box.Parent = checkboxFrame
+			Instance.new("UICorner", box).CornerRadius = UDim.new(0, 4)
+			local str = Instance.new("UIStroke", box)
+			str.Color = Color3.fromRGB(55, 55, 60)
+			str.Thickness = 1
+			
+			local innerCheck = Instance.new("Frame")
+			innerCheck.Size = UDim2.new(0, 10, 0, 10)
+			innerCheck.Position = UDim2.new(0.5, -5, 0.5, -5)
+			innerCheck.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
+			innerCheck.Visible = default
+			innerCheck.Parent = box
+			Instance.new("UICorner", innerCheck).CornerRadius = UDim.new(0, 3)
+			
+			local checked = default
+			box.MouseButton1Click:Connect(function()
+				checked = not checked
+				innerCheck.Visible = checked
+				if callback then callback(checked) end
+			end)
+			return checkboxFrame
+		end
 		
 		function innerElements:CreateSlider(text, min, max, default, callback)
 			if hasTabs then return end
+			currentDualButtonRow = nil
 			local sliderFrame = Instance.new("Frame")
 			sliderFrame.Size = UDim2.new(1, 0, 0, 32)
 			sliderFrame.BackgroundTransparency = 1
@@ -1148,13 +1295,31 @@ function library:CreateTab(tabName)
 			return sliderFrame
 		end
 		
-		function innerElements:CreateDropdown(text, optionsList, callback)
+		function innerElements:CreateDropdown(config, optionsList, callback)
 			if hasTabs then return end
+			currentDualButtonRow = nil
+			local text = ""
+			local list = {}
+			local isMulti = false
+			local cb = nil
+
+			if type(config) == "table" and not config.Size then
+				text = config.text or config.title or ""
+				list = config.list or config.options or {}
+				isMulti = config.multi or config.MultipleOptions or false
+				cb = config.callback
+			else
+				text = config or ""
+				list = optionsList or {}
+				cb = callback
+			end
+
+			local selectedOptions = {}
 			local dropFrame = Instance.new("Frame")
 			dropFrame.Size = UDim2.new(1, 0, 0, 24)
 			dropFrame.BackgroundColor3 = Color3.fromRGB(34, 34, 36)
 			dropFrame.ClipsDescendants = true
-			dropFrame.Parent = dropFrame
+			dropFrame.Parent = boxContent
 			Instance.new("UICorner", dropFrame).CornerRadius = UDim.new(0, 5)
 			local str = Instance.new("UIStroke", dropFrame)
 			str.Color = Color3.fromRGB(50, 50, 55)
@@ -1170,14 +1335,26 @@ function library:CreateTab(tabName)
 			mainBtn.Parent = dropFrame
 			
 			local listFrame = Instance.new("Frame")
-			listFrame.Size = UDim2.new(1, 0, 0, #optionsList * 20)
+			listFrame.Size = UDim2.new(1, 0, 0, #list * 20)
 			listFrame.Position = UDim2.new(0, 0, 0, 24)
 			listFrame.BackgroundTransparency = 1
 			listFrame.Parent = dropFrame
 			local listLayout = Instance.new("UIListLayout")
 			listLayout.Parent = listFrame
 			
-			for _, option in pairs(optionsList) do
+			local function updateDisplayText()
+				local selectedText = {}
+				for opt, val in pairs(selectedOptions) do
+					if val then table.insert(selectedText, tostring(opt)) end
+				end
+				if #selectedText > 0 then
+					mainBtn.Text = " " .. text .. " : " .. table.concat(selectedText, ", ")
+				else
+					mainBtn.Text = " " .. text .. " : Select..."
+				end
+			end
+
+			for _, option in pairs(list) do
 				local optBtn = Instance.new("TextButton")
 				optBtn.Size = UDim2.new(1, 0, 0, 20)
 				optBtn.BackgroundTransparency = 1
@@ -1187,18 +1364,36 @@ function library:CreateTab(tabName)
 				optBtn.Font = Enum.Font.Gotham
 				optBtn.TextXAlignment = Enum.TextXAlignment.Left
 				optBtn.Parent = listFrame
+				
 				optBtn.MouseButton1Click:Connect(function()
-					mainBtn.Text = " " .. text .. " : " .. tostring(option)
-					dropFrame.Size = UDim2.new(1, 0, 0, 24)
-					updateDimensions()
-					if callback then callback(option) end
+					if isMulti then
+						selectedOptions[option] = not selectedOptions[option]
+						if selectedOptions[option] then
+							optBtn.TextColor3 = Color3.fromRGB(0, 140, 255)
+						else
+							optBtn.TextColor3 = Color3.fromRGB(160, 160, 165)
+						end
+						updateDisplayText()
+						if cb then
+							local currentSelection = {}
+							for opt, val in pairs(selectedOptions) do
+								if val then table.insert(currentSelection, opt) end
+							end
+							cb(currentSelection)
+						end
+					else
+						mainBtn.Text = " " .. text .. " : " .. tostring(option)
+						dropFrame.Size = UDim2.new(1, 0, 0, 24)
+						updateDimensions()
+						if cb then cb(option) end
+					end
 				end)
 			end
 			
 			local isOpened = false
 			mainBtn.MouseButton1Click:Connect(function()
 				isOpened = not isOpened
-				local targetH = isOpened and (24 + #optionsList * 20) or 24
+				local targetH = isOpened and (24 + #list * 20) or 24
 				dropFrame.Size = UDim2.new(1, 0, 0, targetH)
 				updateDimensions()
 			end)
@@ -1207,6 +1402,7 @@ function library:CreateTab(tabName)
 		
 		function innerElements:CreateInput(text, placeholder, callback)
 			if hasTabs then return end
+			currentDualButtonRow = nil
 			local inputFrame = Instance.new("Frame")
 			inputFrame.Size = UDim2.new(1, 0, 0, 24)
 			inputFrame.BackgroundTransparency = 1
@@ -1244,6 +1440,7 @@ function library:CreateTab(tabName)
 		
 		function innerElements:CreateParagraph(text)
 			if hasTabs then return end
+			currentDualButtonRow = nil
 			local para = Instance.new("TextLabel")
 			para.Size = UDim2.new(1, 0, 0, 28)
 			para.BackgroundTransparency = 1
@@ -1260,6 +1457,7 @@ function library:CreateTab(tabName)
 		
 		function innerElements:CreateLabel(text)
 			if hasTabs then return end
+			currentDualButtonRow = nil
 			local label = Instance.new("TextLabel")
 			label.Size = UDim2.new(1, 0, 0, 16)
 			label.BackgroundTransparency = 1
@@ -1274,6 +1472,7 @@ function library:CreateTab(tabName)
 		
 		function innerElements:CreateDivider()
 			if hasTabs then return end
+			currentDualButtonRow = nil
 			local div = Instance.new("Frame")
 			div.Size = UDim2.new(1, 0, 0, 1)
 			div.BackgroundColor3 = Color3.fromRGB(48, 48, 52)
@@ -1283,6 +1482,7 @@ function library:CreateTab(tabName)
 		end
 		
 		function innerElements:tabbox(tabName)
+			currentDualButtonRow = nil
 			local allowedMax = (layoutType == "allside") and 5 or 3
 			if #tabBoxPages >= allowedMax then
 				return nil
@@ -1385,24 +1585,97 @@ function library:CreateTab(tabName)
 			end)
 			
 			local tabElements = {}
-			
-			function tabElements:CreateButton(text, callback)
+			local currentTabDualButtonRow = nil
+
+			function tabElements:CreateButton(config, callback)
+				local titleText = ""
+				local cb = callback
+				if type(config) == "table" then
+					titleText = config.title or config.text or ""
+					cb = config.callback
+				else
+					titleText = config or ""
+				end
+
 				local btn = Instance.new("TextButton")
-				btn.Size = UDim2.new(1, 0, 0, 24)
 				btn.BackgroundColor3 = Color3.fromRGB(36, 36, 38)
-				btn.Text = text
+				btn.Text = titleText
 				btn.TextColor3 = Color3.fromRGB(230, 230, 235)
 				btn.TextSize = 11
 				btn.Font = Enum.Font.GothamMedium
-				btn.Parent = tPage
 				Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
 				local str = Instance.new("UIStroke", btn)
 				str.Color = Color3.fromRGB(52, 52, 56)
-				btn.MouseButton1Click:Connect(function() if callback then callback() end end)
+				btn.MouseButton1Click:Connect(function() if cb then cb() end end)
+
+				if currentTabDualButtonRow and not currentTabDualButtonRow:GetAttribute("RightButtonTaken") then
+					btn.Size = UDim2.new(0.49, 0, 1, 0)
+					btn.Position = UDim2.new(0.51, 0, 0, 0)
+					btn.Parent = currentTabDualButtonRow
+					currentTabDualButtonRow:SetAttribute("RightButtonTaken", true)
+					currentTabDualButtonRow = nil
+				else
+					currentTabDualButtonRow = Instance.new("Frame")
+					currentTabDualButtonRow.Size = UDim2.new(1, 0, 0, 24)
+					currentTabDualButtonRow.BackgroundTransparency = 1
+					currentTabDualButtonRow.Parent = tPage
+					currentTabDualButtonRow:SetAttribute("RightButtonTaken", false)
+					
+					btn.Size = UDim2.new(0.49, 0, 1, 0)
+					btn.Position = UDim2.new(0, 0, 0, 0)
+					btn.Parent = currentTabDualButtonRow
+				end
 				return btn
+			end
+
+			function tabElements:CreateDualButton(config, cb1, text2, cb2)
+				currentTabDualButtonRow = nil
+				local row = Instance.new("Frame")
+				row.Size = UDim2.new(1, 0, 0, 24)
+				row.BackgroundTransparency = 1
+				row.Parent = tPage
+				local t1, t2 = "Button 1", "Button 2"
+				local c1, c2 = cb1, cb2
+				if type(config) == "table" then
+					t1 = config.Text1 or (config.Button1 and config.Button1.Text) or "Button 1"
+					c1 = config.Callback1 or (config.Button1 and config.Button1.Callback) or nil
+					t2 = config.Text2 or (config.Button2 and config.Button2.Text) or "Button 2"
+					c2 = config.Callback2 or (config.Button2 and config.Button2.Callback) or nil
+				else
+					t1 = config or "Button 1"
+					t2 = text2 or "Button 2"
+				end
+				local btn1 = Instance.new("TextButton")
+				btn1.Size = UDim2.new(0.49, 0, 1, 0)
+				btn1.Position = UDim2.new(0, 0, 0, 0)
+				btn1.BackgroundColor3 = Color3.fromRGB(36, 36, 38)
+				btn1.Text = t1
+				btn1.TextColor3 = Color3.fromRGB(230, 230, 235)
+				btn1.TextSize = 11
+				btn1.Font = Enum.Font.GothamMedium
+				btn1.Parent = row
+				Instance.new("UICorner", btn1).CornerRadius = UDim.new(0, 5)
+				local str1 = Instance.new("UIStroke", btn1)
+				str1.Color = Color3.fromRGB(52, 52, 56)
+				btn1.MouseButton1Click:Connect(function() if c1 then c1() end end)
+				local btn2 = Instance.new("TextButton")
+				btn2.Size = UDim2.new(0.49, 0, 1, 0)
+				btn2.Position = UDim2.new(0.51, 0, 0, 0)
+				btn2.BackgroundColor3 = Color3.fromRGB(36, 36, 38)
+				btn2.Text = t2
+				btn2.TextColor3 = Color3.fromRGB(230, 230, 235)
+				btn2.TextSize = 11
+				btn2.Font = Enum.Font.GothamMedium
+				btn2.Parent = row
+				Instance.new("UICorner", btn2).CornerRadius = UDim.new(0, 5)
+				local str2 = Instance.new("UIStroke", btn2)
+				str2.Color = Color3.fromRGB(52, 52, 56)
+				btn2.MouseButton1Click:Connect(function() if c2 then c2() end end)
+				return row
 			end
 			
 			function tabElements:CreateToggle(text, default, callback)
+				currentTabDualButtonRow = nil
 				local toggleFrame = Instance.new("Frame")
 				toggleFrame.Size = UDim2.new(1, 0, 0, 24)
 				toggleFrame.BackgroundTransparency = 1
@@ -1442,8 +1715,54 @@ function library:CreateTab(tabName)
 				end)
 				return toggleFrame
 			end
+
+			function tabElements:CreateCheckbox(text, default, callback)
+				currentTabDualButtonRow = nil
+				local checkboxFrame = Instance.new("Frame")
+				checkboxFrame.Size = UDim2.new(1, 0, 0, 24)
+				checkboxFrame.BackgroundTransparency = 1
+				checkboxFrame.Parent = tPage
+				
+				local lbl = Instance.new("TextLabel")
+				lbl.Size = UDim2.new(1, -30, 1, 0)
+				lbl.BackgroundTransparency = 1
+				lbl.Text = text
+				lbl.TextColor3 = Color3.fromRGB(210, 210, 215)
+				lbl.TextSize = 11
+				lbl.Font = Enum.Font.GothamMedium
+				lbl.TextXAlignment = Enum.TextXAlignment.Left
+				lbl.Parent = checkboxFrame
+				
+				local box = Instance.new("TextButton")
+				box.Size = UDim2.new(0, 16, 0, 16)
+				box.Position = UDim2.new(1, -22, 0.5, -8)
+				box.BackgroundColor3 = Color3.fromRGB(36, 36, 38)
+				box.Text = ""
+				box.Parent = checkboxFrame
+				Instance.new("UICorner", box).CornerRadius = UDim.new(0, 4)
+				local str = Instance.new("UIStroke", box)
+				str.Color = Color3.fromRGB(55, 55, 60)
+				str.Thickness = 1
+				
+				local innerCheck = Instance.new("Frame")
+				innerCheck.Size = UDim2.new(0, 10, 0, 10)
+				innerCheck.Position = UDim2.new(0.5, -5, 0.5, -5)
+				innerCheck.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
+				innerCheck.Visible = default
+				innerCheck.Parent = box
+				Instance.new("UICorner", innerCheck).CornerRadius = UDim.new(0, 3)
+				
+				local checked = default
+				box.MouseButton1Click:Connect(function()
+					checked = not checked
+					innerCheck.Visible = checked
+					if callback then callback(checked) end
+				end)
+				return checkboxFrame
+			end
 			
 			function tabElements:CreateSlider(text, min, max, default, callback)
+				currentTabDualButtonRow = nil
 				local sliderFrame = Instance.new("Frame")
 				sliderFrame.Size = UDim2.new(1, 0, 0, 32)
 				sliderFrame.BackgroundTransparency = 1
@@ -1509,7 +1828,25 @@ function library:CreateTab(tabName)
 				return sliderFrame
 			end
 			
-			function tabElements:CreateDropdown(text, optionsList, callback)
+			function tabElements:CreateDropdown(config, optionsList, callback)
+				currentTabDualButtonRow = nil
+				local text = ""
+				local list = {}
+				local isMulti = false
+				local cb = nil
+
+				if type(config) == "table" and not config.Size then
+					text = config.text or config.title or ""
+					list = config.list or config.options or {}
+					isMulti = config.multi or config.MultipleOptions or false
+					cb = config.callback
+				else
+					text = config or ""
+					list = optionsList or {}
+					cb = callback
+				end
+
+				local selectedOptions = {}
 				local dropFrame = Instance.new("Frame")
 				dropFrame.Size = UDim2.new(1, 0, 0, 24)
 				dropFrame.BackgroundColor3 = Color3.fromRGB(34, 34, 36)
@@ -1530,14 +1867,26 @@ function library:CreateTab(tabName)
 				mainBtn.Parent = dropFrame
 				
 				local listFrame = Instance.new("Frame")
-				listFrame.Size = UDim2.new(1, 0, 0, #optionsList * 20)
+				listFrame.Size = UDim2.new(1, 0, 0, #list * 20)
 				listFrame.Position = UDim2.new(0, 0, 0, 24)
 				listFrame.BackgroundTransparency = 1
 				listFrame.Parent = dropFrame
 				local listLayout = Instance.new("UIListLayout")
 				listLayout.Parent = listFrame
 				
-				for _, option in pairs(optionsList) do
+				local function updateDisplayText()
+					local selectedText = {}
+					for opt, val in pairs(selectedOptions) do
+						if val then table.insert(selectedText, tostring(opt)) end
+					end
+					if #selectedText > 0 then
+						mainBtn.Text = " " .. text .. " : " .. table.concat(selectedText, ", ")
+					else
+						mainBtn.Text = " " .. text .. " : Select..."
+					end
+				end
+
+				for _, option in pairs(list) do
 					local optBtn = Instance.new("TextButton")
 					optBtn.Size = UDim2.new(1, 0, 0, 20)
 					optBtn.BackgroundTransparency = 1
@@ -1547,18 +1896,36 @@ function library:CreateTab(tabName)
 					optBtn.Font = Enum.Font.Gotham
 					optBtn.TextXAlignment = Enum.TextXAlignment.Left
 					optBtn.Parent = listFrame
+					
 					optBtn.MouseButton1Click:Connect(function()
-						mainBtn.Text = " " .. text .. " : " .. tostring(option)
-						dropFrame.Size = UDim2.new(1, 0, 0, 24)
-						updateDimensions()
-						if callback then callback(option) end
+						if isMulti then
+							selectedOptions[option] = not selectedOptions[option]
+							if selectedOptions[option] then
+								optBtn.TextColor3 = Color3.fromRGB(0, 140, 255)
+							else
+								optBtn.TextColor3 = Color3.fromRGB(160, 160, 165)
+							end
+							updateDisplayText()
+							if cb then
+								local currentSelection = {}
+								for opt, val in pairs(selectedOptions) do
+									if val then table.insert(currentSelection, opt) end
+								end
+								cb(currentSelection)
+							end
+						else
+							mainBtn.Text = " " .. text .. " : " .. tostring(option)
+							dropFrame.Size = UDim2.new(1, 0, 0, 24)
+							updateDimensions()
+							if cb then cb(option) end
+						end
 					end)
 				end
 				
 				local isOpened = false
 				mainBtn.MouseButton1Click:Connect(function()
 					isOpened = not isOpened
-					local targetH = isOpened and (24 + #optionsList * 20) or 24
+					local targetH = isOpened and (24 + #list * 20) or 24
 					dropFrame.Size = UDim2.new(1, 0, 0, targetH)
 					updateDimensions()
 				end)
@@ -1566,6 +1933,7 @@ function library:CreateTab(tabName)
 			end
 			
 			function tabElements:CreateInput(text, placeholder, callback)
+				currentTabDualButtonRow = nil
 				local inputFrame = Instance.new("Frame")
 				inputFrame.Size = UDim2.new(1, 0, 0, 24)
 				inputFrame.BackgroundTransparency = 1
@@ -1602,6 +1970,7 @@ function library:CreateTab(tabName)
 			end
 			
 			function tabElements:CreateParagraph(text)
+				currentTabDualButtonRow = nil
 				local para = Instance.new("TextLabel")
 				para.Size = UDim2.new(1, 0, 0, 28)
 				para.BackgroundTransparency = 1
@@ -1617,6 +1986,7 @@ function library:CreateTab(tabName)
 			end
 			
 			function tabElements:CreateLabel(text)
+				currentTabDualButtonRow = nil
 				local label = Instance.new("TextLabel")
 				label.Size = UDim2.new(1, 0, 0, 16)
 				label.BackgroundTransparency = 1
@@ -1630,6 +2000,7 @@ function library:CreateTab(tabName)
 			end
 			
 			function tabElements:CreateDivider()
+				currentTabDualButtonRow = nil
 				local div = Instance.new("Frame")
 				div.Size = UDim2.new(1, 0, 0, 1)
 				div.BackgroundColor3 = Color3.fromRGB(48, 48, 52)
@@ -1645,5 +2016,104 @@ function library:CreateTab(tabName)
 	end
 	return pageElements
 end
+
+local function checkMatch(obj, q)
+	if q == "" then return true end
+	if obj:IsA("TextLabel") or obj:IsA("TextButton") then
+		if string.find(string.lower(obj.Text), q, 1, true) then
+			return true
+		end
+	end
+	for _, child in ipairs(obj:GetChildren()) do
+		if child.Name ~= "GroupTitle" and checkMatch(child, q) then
+			return true
+		end
+	end
+	return false
+end
+
+searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+	local query = string.lower(searchBox.Text)
+	for _, page in ipairs(pages) do
+		for _, child in ipairs(page:GetChildren()) do
+			if child.Name == "GroupBox" and child:IsA("GuiObject") then
+				local titleLabel = child:FindFirstChild("GroupTitle")
+				local titleText = titleLabel and string.lower(titleLabel.Text) or ""
+				local titleMatches = (query == "") or (string.find(titleText, query, 1, true) ~= nil)
+				local content = child:FindFirstChild("ElementsContainer")
+				local anyElementMatches = false
+				if content then
+					for _, element in ipairs(content:GetChildren()) do
+						if element:IsA("GuiObject") and element.Name ~= "UIListLayout" and element.Name ~= "UIPadding" then
+							if element.LayoutOrder == 2 and element:IsA("Frame") then
+								local anyTabElementMatches = false
+								for _, tabPage in ipairs(element:GetChildren()) do
+									if tabPage:IsA("Frame") then
+										local pageMatch = false
+										for _, tabElem in ipairs(tabPage:GetChildren()) do
+											if tabElem:IsA("GuiObject") and tabElem.Name ~= "UIListLayout" then
+												local m = (query == "") or checkMatch(tabElem, query)
+												tabElem.Visible = m
+												if m then pageMatch = true end
+											end
+										end
+										if pageMatch then anyTabElementMatches = true end
+									end
+								end
+								if anyTabElementMatches then anyElementMatches = true end
+							else
+								local m = (query == "") or checkMatch(element, query)
+								element.Visible = m
+								if m then anyElementMatches = true end
+							end
+						end
+					end
+				end
+				child.Visible = titleMatches or anyElementMatches
+			elseif child:IsA("Frame") then
+				local hasVisibleChild = false
+				for _, subChild in ipairs(child:GetChildren()) do
+					if subChild.Name == "GroupBox" and subChild:IsA("GuiObject") then
+						local titleLabel = subChild:FindFirstChild("GroupTitle")
+						local titleText = titleLabel and string.lower(titleLabel.Text) or ""
+						local titleMatches = (query == "") or (string.find(titleText, query, 1, true) ~= nil)
+						local content = subChild:FindFirstChild("ElementsContainer")
+						local anyElementMatches = false
+						if content then
+							for _, element in ipairs(content:GetChildren()) do
+								if element:IsA("GuiObject") and element.Name ~= "UIListLayout" and element.Name ~= "UIPadding" then
+									if element.LayoutOrder == 2 and element:IsA("Frame") then
+										local anyTabElementMatches = false
+										for _, tabPage in ipairs(element:GetChildren()) do
+											if tabPage:IsA("Frame") then
+												local pageMatch = false
+												for _, tabElem in ipairs(tabPage:GetChildren()) do
+													if tabElem:IsA("GuiObject") and tabElem.Name ~= "UIListLayout" then
+														local m = (query == "") or checkMatch(tabElem, query)
+														tabElem.Visible = m
+														if m then pageMatch = true end
+													end
+												end
+												if pageMatch then anyTabElementMatches = true end
+											end
+										end
+										if anyTabElementMatches then anyElementMatches = true end
+									else
+										local m = (query == "") or checkMatch(element, query)
+										element.Visible = m
+										if m then anyElementMatches = true end
+									end
+								end
+							end
+						end
+						subChild.Visible = titleMatches or anyElementMatches
+						if subChild.Visible then hasVisibleChild = true end
+					end
+				end
+				child.Visible = (query == "") or hasVisibleChild
+			end
+		end
+	end
+end)
 
 return library
