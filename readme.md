@@ -6,9 +6,9 @@ local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIP
 **window**
 ```luau
 local window = library:CreateWindow({
-	title = "Premium Hub Tester",
-	desc = "Full API Integration Framework Inside Mobile Screen",
-	footer = "wave ui: v1.3 loaded",
+	title = "Tester",
+	desc = "this a good ui library",
+	footer = "wave ui: v1.3",
 	open = true
 })
 ```
@@ -18,18 +18,18 @@ library:SetTopTags({"MAIN", "VIP"})
 ```
 **tab**
 ```luau
-local combatTab = library:CreateTab("Combat Frame")
+local Tab = library:CreateTab("Combat Frame")
 ```
 **group box**
 ```luau
-local leftGroup = combatTab:CreateGroupBox("Self Options", "left", "open")
-local rightGroup = combatTab:CreateGroupBox("Target Setup", "right", "open")
-local allsideGroup = combatTab:CreateGroupBox("Subsystem Router", "allside", "open")
+local leftGroup = Tab:CreateGroupBox("Self Options", "left", "open")
+local rightGroup = Tab:CreateGroupBox("Target Setup", "right", "open")
+local allsideGroup = Tab:CreateGroupBox("Subsystem Router", "allside", "open")
 ```
 **tabbox**
 ```luau
-local subTab1 = allsideGroup:tabbox("Main Frame")
-local subTab2 = allsideGroup:tabbox("Secondary Frame")
+local subTab1 = leftGroup:tabbox("Main Frame")
+local subTab2 = leftGroup:tabbox("Secondary Frame")
 ```
 # ================
 # element
