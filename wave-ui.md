@@ -98,3 +98,8 @@ rightGroup:CreateDropdown({
 ```luau
 leftGroup:CreateDivider()
 ```
+
+# tutorial
+place load library on top and window in down load library
+place tag or not If not, the search bar will still be there. If you add a tag, the search bar will not be there.
+place tab and group box first the new element
