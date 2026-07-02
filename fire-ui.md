@@ -48,6 +48,17 @@ library:Notification({
     duration = 5
 })
 ```
+**set theme**
+```luau
+dark = {
+        MainBG = Color3.fromRGB(24, 24, 26),
+        HeaderBG = Color3.fromRGB(15, 15, 15),
+        Stroke = Color3.fromRGB(55, 55, 60),
+        ButtonBG = Color3.fromRGB(36, 36, 40),
+        GroupBG = Color3.fromRGB(30, 30, 33),
+        Accent = Color3.fromRGB(140, 140, 140)
+    }
+```
 # element
 ```luau
 Tab:Addbutton({
