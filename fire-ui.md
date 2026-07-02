@@ -13,8 +13,10 @@ local window = library:window({
 })
 ```
 **theme**
+
 `dark`,`neon`,`ocean`
-`golden`,`light`
+`golden`,`light`,`fire`
+
 **tag**
 ```luau
 window:AddTag({
@@ -28,14 +30,13 @@ window:AddTag({
 ```
 **tab**
 ```luau
-local home = window:AddTab("Home")
+local tab = window:AddTab("main")
 ```
 # utility
-**group box**
+**section**
 ```luau
-local mainBox = home:AddGroupBox({
+local mainBox = home:AddSection({
     title = "Main Status",
-    side = "left",
     open = true
 })
 ```
@@ -45,5 +46,92 @@ library:Notification({
     title = "Premium Mobile Hub Loaded",
     desc = "hello world",
     duration = 5
+})
+```
+# element
+```luau
+Tab:Addbutton({
+    title = "button",
+    desc = "click button",
+    callback = function()
+        print("hello world")
+    end
+})
+```
+**toggle**
+```luau
+Tab:Addtoggle({
+    title = "Auto Farm Gold",
+    desc = "Mengaktifkan fungsi perulangan otomatis",
+    value = false,
+    callback = function(state)
+        print("Status Auto Farm:", state)
+    end
+})
+```
+**slider**
+```luau
+Tab:AddSlider({
+    Title = "Kecepatan Karakter",
+    Desc = "Mengatur WalkSpeed pemain",
+    Step = 1,
+    Value = {Min = 16, Max = 250, Default = 16},
+    Callback = function(value)
+        print("hello world")
+    end
+})
+```
+**dropdown**
+```luau
+Tab:AddDropdown({
+    Title = "mode",
+    Desc = "choose value",
+    Values = {"Lobby", "Farm Zone", "VIP Room", "Shop"},
+    Value = {"Lobby"},
+    Multi = false,
+    Callback = function(selected)
+        print("hello world")
+    end
+})
+```
+**paragraph**
+```luau
+Tab:AddParagraph({
+    Title = "Peringatan Sistem",
+    Desc = "Berhati-hatilah saat mengubah pengaturan sensitif.",
+    Color = "Red"
+})
+```
+**input**
+```luau
+Tab:AddInput({
+    Title = "Custom Teleport Speed",
+    Desc = "Masukkan angka delay perpindahan",
+    Value = "0.5",
+    Callback = function(text)
+        print("Delay diubah menjadi:", text)
+    end
+})
+```
+**keybind**
+```luau
+Tab2:AddKeybind({
+    Title = "Keybind Serangan",
+    Desc = "Ganti tombol eksekusi skill",
+    Value = "E",
+    Callback = function(key)
+        print("Tombol serangan baru:", key)
+    end
+})
+```
+**Color picker**
+```luau
+Tab2:AddColorpicker({
+    Title = "Warna ESP Target",
+    Desc = "Mengubah warna visualisasi musuh",
+    Default = Color3.fromRGB(0, 255, 204),
+    Callback = function(color)
+        print("Warna baru yang dipilih:", tostring(color))
+    end
 })
 ```
