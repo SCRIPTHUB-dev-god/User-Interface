@@ -115,7 +115,7 @@ Tab:AddInput({
 ```
 **keybind**
 ```luau
-Tab2:AddKeybind({
+Tab:AddKeybind({
     Title = "Keybind Serangan",
     Desc = "Ganti tombol eksekusi skill",
     Value = "E",
@@ -126,7 +126,7 @@ Tab2:AddKeybind({
 ```
 **Color picker**
 ```luau
-Tab2:AddColorpicker({
+Tab:AddColorpicker({
     Title = "Warna ESP Target",
     Desc = "Mengubah warna visualisasi musuh",
     Default = Color3.fromRGB(0, 255, 204),
