@@ -35,7 +35,7 @@ local tab = window:AddTab("main")
 # utility
 **section**
 ```luau
-local mainBox = home:AddSection({
+local mainBox = tab:AddSection({
     title = "Main Status",
     open = true
 })
