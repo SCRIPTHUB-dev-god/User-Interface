@@ -55,11 +55,17 @@ dark = {
         HeaderBG = Color3.fromRGB(15, 15, 15),
         Stroke = Color3.fromRGB(55, 55, 60),
         ButtonBG = Color3.fromRGB(36, 36, 40),
-        GroupBG = Color3.fromRGB(30, 30, 33),
+        SectionBG = Color3.fromRGB(30, 30, 33),
         Accent = Color3.fromRGB(140, 140, 140)
     }
 ```
+**divider**
+```luau
+window:AddDivider() -- for tab
+Tab:AddDivider() -- for main tab and section
+```
 # element
+**button**
 ```luau
 Tab:Addbutton({
     title = "button",
@@ -127,22 +133,22 @@ Tab:AddInput({
 **keybind**
 ```luau
 Tab:AddKeybind({
-    Title = "Keybind Serangan",
-    Desc = "Ganti tombol eksekusi skill",
+    Title = "choose Keybind",
+    Desc = "what your selected keybind",
     Value = "E",
     Callback = function(key)
-        print("Tombol serangan baru:", key)
+        print("hello world")
     end
 })
 ```
 **Color picker**
 ```luau
 Tab:AddColorpicker({
-    Title = "Warna ESP Target",
-    Desc = "Mengubah warna visualisasi musuh",
+    Title = "choose color",
+    Desc = "blue is best color",
     Default = Color3.fromRGB(0, 255, 204),
     Callback = function(color)
-        print("Warna baru yang dipilih:", tostring(color))
+        print("hello world", tostring(color))
     end
 })
 ```
