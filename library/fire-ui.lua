@@ -186,7 +186,7 @@ function library:window(options)
     MainUI.Name = "MainUI"
     MainUI.Size = UDim2.new(0, 560, 0, 360)
     MainUI.AnchorPoint = Vector2.new(0.5, 0.5)
-    MainUI.Position = UDim2.new(0.5, 0, 0.5, 0)
+    MainUI.Position = UDim2.new(0.5, 0, 0.6, 0)
     MainUI.BackgroundColor3 = currentTheme.MainBG
     MainUI.BackgroundTransparency = bgTrans
     MainUI.BorderSizePixel = 0
@@ -448,7 +448,7 @@ function library:window(options)
     local ToggleUI = Instance.new("Frame")
     ToggleUI.Name = "ToggleUI"
     ToggleUI.Size = UDim2.new(0, 135, 0, 36)
-    ToggleUI.Position = UDim2.new(0.05, 0, 0.05, 30)
+    ToggleUI.Position = UDim2.new(0.05, 0, 0.1, 30)
     ToggleUI.BackgroundColor3 = currentTheme.MainBG
     ToggleUI.BackgroundTransparency = bgTrans
     ToggleUI.BorderSizePixel = 0
