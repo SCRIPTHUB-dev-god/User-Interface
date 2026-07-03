@@ -17,7 +17,7 @@ local themes = {
         HeaderBG = Color3.fromRGB(15, 15, 15),
         Stroke = Color3.fromRGB(55, 55, 60),
         ButtonBG = Color3.fromRGB(36, 36, 40),
-        GroupBG = Color3.fromRGB(30, 30, 33),
+        SectionBG = Color3.fromRGB(30, 30, 33),
         Accent = Color3.fromRGB(140, 140, 140)
     },
     neon = {
@@ -25,7 +25,7 @@ local themes = {
         HeaderBG = Color3.fromRGB(8, 6, 12),
         Stroke = Color3.fromRGB(0, 255, 204),
         ButtonBG = Color3.fromRGB(28, 22, 40),
-        GroupBG = Color3.fromRGB(22, 17, 32),
+        SectionBG = Color3.fromRGB(22, 17, 32),
         Accent = Color3.fromRGB(255, 0, 127)
     },
     ocean = {
@@ -33,7 +33,7 @@ local themes = {
         HeaderBG = Color3.fromRGB(6, 12, 18),
         Stroke = Color3.fromRGB(0, 150, 255),
         ButtonBG = Color3.fromRGB(20, 36, 52),
-        GroupBG = Color3.fromRGB(16, 28, 42),
+        SectionBG = Color3.fromRGB(16, 28, 42),
         Accent = Color3.fromRGB(0, 200, 255)
     },
     crimson = {
@@ -41,14 +41,14 @@ local themes = {
         HeaderBG = Color3.fromRGB(14, 6, 6),
         Stroke = Color3.fromRGB(180, 30, 30),
         ButtonBG = Color3.fromRGB(40, 20, 20),
-        GroupBG = Color3.fromRGB(32, 16, 16),
+        SectionBG = Color3.fromRGB(32, 16, 16),
         Accent = Color3.fromRGB(255, 50, 50)
     },
     golden = {
         MainBG = Color3.fromRGB(24, 22, 18),
         HeaderBG = Color3.fromRGB(16, 14, 12),
         Stroke = Color3.fromRGB(40, 35, 30),
-        GroupBG = Color3.fromRGB(33, 28, 24),
+        SectionBG = Color3.fromRGB(33, 28, 24),
         Accent = Color3.fromRGB(255, 215, 0)
     },
     light = {
@@ -56,7 +56,7 @@ local themes = {
         HeaderBG = Color3.fromRGB(95, 95, 100),
         Stroke = Color3.fromRGB(180, 180, 185),
         ButtonBG = Color3.fromRGB(145, 145, 150),
-        GroupBG = Color3.fromRGB(110, 110, 115),
+        SectionBG = Color3.fromRGB(110, 110, 115),
         Accent = Color3.fromRGB(245, 245, 245)
     },
     fire = {
@@ -64,7 +64,7 @@ local themes = {
         HeaderBG = Color3.fromRGB(15, 5, 2),
         Stroke = Color3.fromRGB(255, 69, 0),
         ButtonBG = Color3.fromRGB(45, 18, 10),
-        GroupBG = Color3.fromRGB(35, 14, 8),
+        SectionBG = Color3.fromRGB(35, 14, 8),
         Accent = Color3.fromRGB(255, 140, 0)
     }
 }
@@ -221,7 +221,7 @@ function library:window(options)
     profile.Name = "Profile"
     profile.Size = UDim2.new(0, 28, 0, 28)
     profile.Position = UDim2.new(0, 8, 0.5, -14)
-    profile.BackgroundColor3 = currentTheme.GroupBG
+    profile.BackgroundColor3 = currentTheme.SectionBG
     profile.BackgroundTransparency = bgTrans
     profile.Image = "https://www.roblox.com/headshot-thumbnail/image?userId="..LocalPlayer.UserId.."&width=420&height=420&format=png"
     profile.BorderSizePixel = 0
@@ -358,6 +358,28 @@ function library:window(options)
     sideLine.BorderSizePixel = 0
     sideLine.ZIndex = 5
 
+    local SidebarScroll = Instance.new("ScrollingFrame", Sidebar)
+    SidebarScroll.Name = "SidebarScroll"
+    SidebarScroll.Size = UDim2.new(1, 0, 1, -48)
+    SidebarScroll.Position = UDim2.new(0, 0, 0, 48)
+    SidebarScroll.BackgroundTransparency = 1
+    SidebarScroll.BorderSizePixel = 0
+    SidebarScroll.ScrollBarThickness = 0
+    SidebarScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    SidebarScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+    local sidebarLayout = Instance.new("UIListLayout", SidebarScroll)
+    sidebarLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    sidebarLayout.Padding = UDim.new(0, 6)
+    sidebarLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+    function window:AddDivider()
+        local line = Instance.new("Frame", SidebarScroll)
+        line.Size = UDim2.new(1, -12, 0, 1)
+        line.BackgroundColor3 = currentTheme.Stroke
+        line.BorderSizePixel = 0
+    end
+
     local ContentHolder = Instance.new("Frame", MainUI)
     ContentHolder.Name = "ContentHolder"
     ContentHolder.Size = UDim2.new(1, -91, 1, -40)
@@ -401,12 +423,12 @@ function library:window(options)
     resizeBtn.Text = ""
     resizeBtn.ZIndex = 15
 
-    local resizing, resizeStart, startSize
+    local resizing, resizeStart, startScale
     resizeBtn.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             resizing = true
             resizeStart = input.Position
-            startSize = MainUI.Size
+            startScale = UIScale.Scale
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     resizing = false
@@ -418,9 +440,8 @@ function library:window(options)
     UIS.InputChanged:Connect(function(input)
         if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position - resizeStart
-            local newX = math.max(450, startSize.X.Offset + delta.X)
-            local newY = math.max(280, startSize.Y.Offset + delta.Y)
-            MainUI.Size = UDim2.new(0, newX, 0, newY)
+            local newScale = math.clamp(startScale + (delta.X / 350), 0.50, 2.50)
+            UIScale.Scale = newScale
         end
     end)
 
@@ -517,7 +538,7 @@ function library:window(options)
     DestroyDialog.Size = UDim2.new(0, 260, 0, 120)
     DestroyDialog.AnchorPoint = Vector2.new(0.5, 0.5)
     DestroyDialog.Position = UDim2.new(0.5, 0, 0.5, 0)
-    DestroyDialog.BackgroundColor3 = currentTheme.GroupBG
+    DestroyDialog.BackgroundColor3 = currentTheme.SectionBG
     DestroyDialog.BorderSizePixel = 0
     DestroyDialog.Visible = false
     DestroyDialog.ZIndex = 20
@@ -598,11 +619,10 @@ function library:window(options)
         DestroyDialog.Visible = true
     end)
 
-    local function buatButton(nama, teks, posY)
+    local function buatButton(nama, teks)
         local btn = Instance.new("TextButton")
         btn.Name = nama
         btn.Size = UDim2.new(1, -12, 0, 34)
-        btn.Position = UDim2.new(0, 6, 0, posY)
         btn.BackgroundColor3 = currentTheme.ButtonBG
         btn.BackgroundTransparency = bgTrans
         btn.Text = teks
@@ -611,7 +631,7 @@ function library:window(options)
         btn.TextSize = 14
         btn.AutoButtonColor = false
         btn.ZIndex = 6
-        btn.Parent = Sidebar
+        btn.Parent = SidebarScroll
         btn.TextScaled = true
         
         local btnConstraint = Instance.new("UITextSizeConstraint", btn)
@@ -671,6 +691,13 @@ function library:window(options)
 
     local function buatElementMethods(containerFrame)
         local methods = {}
+
+        function methods:AddDivider()
+            local line = Instance.new("Frame", containerFrame)
+            line.Size = UDim2.new(1, 0, 0, 1)
+            line.BackgroundColor3 = currentTheme.Stroke
+            line.BorderSizePixel = 0
+        end
 
         function methods:Addbutton(btnOptions)
             btnOptions = btnOptions or {}
@@ -851,7 +878,7 @@ function library:window(options)
             for i, val in ipairs(list) do
                 local opt = Instance.new("TextButton", dropList)
                 opt.Size = UDim2.new(1, 0, 0, 28)
-                opt.BackgroundColor3 = table.find(selected, val) and currentTheme.GroupBG or currentTheme.ButtonBG
+                opt.BackgroundColor3 = table.find(selected, val) and currentTheme.SectionBG or currentTheme.ButtonBG
                 opt.BackgroundTransparency = bgTrans
                 opt.Text = "  " .. val
                 opt.TextColor3 = table.find(selected, val) and currentTheme.Accent or Color3.fromRGB(200, 200, 200)
@@ -869,7 +896,7 @@ function library:window(options)
                             opt.TextColor3 = Color3.fromRGB(200, 200, 200)
                         else
                             table.insert(selected, val)
-                            opt.BackgroundColor3 = currentTheme.GroupBG
+                            opt.BackgroundColor3 = currentTheme.SectionBG
                             opt.TextColor3 = currentTheme.Accent
                         end
                     else
@@ -880,7 +907,7 @@ function library:window(options)
                                 child.TextColor3 = Color3.fromRGB(200, 200, 200)
                             end
                         end
-                        opt.BackgroundColor3 = currentTheme.GroupBG
+                        opt.BackgroundColor3 = currentTheme.SectionBG
                         opt.TextColor3 = currentTheme.Accent
                         expanded = false
                         TweenService:Create(ddFrame, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 36)}):Play()
@@ -911,6 +938,8 @@ function library:window(options)
             local default = sldOptions.Value and sldOptions.Value.Default or min
             local callback = sldOptions.Callback or function() end
 
+            local currentVal = default
+
             local sldFrame = Instance.new("Frame", containerFrame)
             sldFrame.Size = UDim2.new(1, 0, 0, 44)
             sldFrame.BackgroundColor3 = currentTheme.ButtonBG
@@ -931,7 +960,7 @@ function library:window(options)
             textLabel.TextSize = 12
             textLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-            local valLabel = Instance.new("TextLabel", sldFrame)
+            local valLabel = Instance.new("TextBox", sldFrame)
             valLabel.Size = UDim2.new(0.35, 0, 0, 24)
             valLabel.Position = UDim2.new(0.65, -8, 0, 2)
             valLabel.BackgroundTransparency = 1
@@ -940,6 +969,7 @@ function library:window(options)
             valLabel.Font = Enum.Font.GothamBold
             valLabel.TextSize = 12
             valLabel.TextXAlignment = Enum.TextXAlignment.Right
+            valLabel.ClearTextOnFocus = false
 
             local lane = Instance.new("Frame", sldFrame)
             lane.Size = UDim2.new(1, -16, 0, 4)
@@ -966,12 +996,12 @@ function library:window(options)
                 local width = lane.AbsoluteSize.X
                 local ratio = math.clamp((currentX - startX) / width, 0, 1)
                 local exactVal = min + (ratio * (max - min))
-                local finalVal = math.round(exactVal / step) * step
-                finalVal = math.clamp(finalVal, min, max)
+                currentVal = math.round(exactVal / step) * step
+                currentVal = math.clamp(currentVal, min, max)
 
-                fill.Size = UDim2.new((finalVal - min) / (max - min), 0, 1, 0)
-                valLabel.Text = tostring(finalVal)
-                callback(finalVal)
+                fill.Size = UDim2.new((currentVal - min) / (max - min), 0, 1, 0)
+                valLabel.Text = tostring(currentVal)
+                callback(currentVal)
             end
 
             sliderBtn.InputBegan:Connect(function(input)
@@ -991,6 +1021,17 @@ function library:window(options)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     sliding = false
                 end
+            end)
+
+            valLabel.FocusLost:Connect(function()
+                local inputNum = tonumber(valLabel.Text)
+                if inputNum then
+                    currentVal = math.round(inputNum / step) * step
+                    currentVal = math.clamp(currentVal, min, max)
+                end
+                fill.Size = UDim2.new((currentVal - min) / (max - min), 0, 1, 0)
+                valLabel.Text = tostring(currentVal)
+                callback(currentVal)
             end)
 
             callback(default)
@@ -1077,7 +1118,7 @@ function library:window(options)
             local bindBox = Instance.new("TextButton", kbFrame)
             bindBox.Size = UDim2.new(0, 45, 0, 20)
             bindBox.Position = UDim2.new(1, -53, 0.5, -10)
-            bindBox.BackgroundColor3 = currentTheme.GroupBG
+            bindBox.BackgroundColor3 = currentTheme.SectionBG
             bindBox.Text = currentKey
             bindBox.TextColor3 = currentTheme.Accent
             bindBox.Font = Enum.Font.GothamBold
@@ -1140,7 +1181,7 @@ function library:window(options)
             textBox.Size = UDim2.new(0.45, 0, 0, 24)
             textBox.Position = UDim2.new(1, -8, 0.5, -12)
             textBox.AnchorPoint = Vector2.new(1, 0)
-            textBox.BackgroundColor3 = currentTheme.GroupBG
+            textBox.BackgroundColor3 = currentTheme.SectionBG
             textBox.Text = default
             textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
             textBox.Font = Enum.Font.Gotham
@@ -1310,19 +1351,12 @@ function library:window(options)
             return cpMethods
         end
 
-        function methods:AddDivider()
-            local line = Instance.new("Frame", containerFrame)
-            line.Size = UDim2.new(1, 0, 0, 1)
-            line.BackgroundColor3 = currentTheme.Stroke
-            line.BorderSizePixel = 0
-        end
-
         return methods
     end
 
     function window:AddTab(tabName)
         local tabIndex = #self.Tabs + 1
-        local button = buatButton(tabName.."Btn", tabName, #self.Tabs * 44 + 50)
+        local button = buatButton(tabName.."Btn", tabName)
 
         local page = Instance.new("Frame", ContentHolder)  
         page.Name = tabName  
@@ -1393,29 +1427,29 @@ function library:window(options)
          
         local tabObj = buatElementMethods(scroll)
         
-        function tabObj:AddSection(gbOptions)
-            gbOptions = gbOptions or {}
-            local gbTitle = gbOptions.title or "Group Box"
-            local isOpen = gbOptions.open ~= false
+        function tabObj:AddSection(sectionOptions)
+            sectionOptions = sectionOptions or {}
+            local sectionTitle = sectionOptions.title or "Section"
+            local isOpen = sectionOptions.open ~= false
 
-            local groupBox = Instance.new("Frame", scroll)
-            groupBox.Name = gbTitle .. "GB"
-            groupBox.Size = UDim2.new(1, 0, 0, 26)
-            groupBox.BackgroundColor3 = currentTheme.GroupBG
-            groupBox.BackgroundTransparency = bgTrans
-            groupBox.BorderSizePixel = 0
-            groupBox.ClipsDescendants = true
+            local sectionBox = Instance.new("Frame", scroll)
+            sectionBox.Name = sectionTitle .. "Sec"
+            sectionBox.Size = UDim2.new(1, 0, 0, 26)
+            sectionBox.BackgroundColor3 = currentTheme.SectionBG
+            sectionBox.BackgroundTransparency = bgTrans
+            sectionBox.BorderSizePixel = 0
+            sectionBox.ClipsDescendants = true
 
-            Instance.new("UICorner", groupBox).CornerRadius = UDim.new(0, 6)
-            local gbStroke = Instance.new("UIStroke", groupBox)
-            gbStroke.Color = currentTheme.Stroke
-            gbStroke.Thickness = 1
+            Instance.new("UICorner", sectionBox).CornerRadius = UDim.new(0, 6)
+            local sectionStroke = Instance.new("UIStroke", sectionBox)
+            sectionStroke.Color = currentTheme.Stroke
+            sectionStroke.Thickness = 1
 
-            local gbLayout = Instance.new("UIListLayout", groupBox)
-            gbLayout.Padding = UDim.new(0, 0)
-            gbLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            local sectionLayout = Instance.new("UIListLayout", sectionBox)
+            sectionLayout.Padding = UDim.new(0, 0)
+            sectionLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-            local topBar = Instance.new("Frame", groupBox)
+            local topBar = Instance.new("Frame", sectionBox)
             topBar.Name = "TopBar"
             topBar.Size = UDim2.new(1, 0, 0, 26)
             topBar.BackgroundTransparency = 1
@@ -1427,7 +1461,7 @@ function library:window(options)
             local titleLabel = Instance.new("TextLabel", topBar)
             titleLabel.Size = UDim2.new(0.7, 0, 1, 0)
             titleLabel.BackgroundTransparency = 1
-            titleLabel.Text = gbTitle
+            titleLabel.Text = sectionTitle
             titleLabel.TextColor3 = Color3.fromRGB(230, 230, 230)
             titleLabel.Font = Enum.Font.GothamBold
             titleLabel.TextSize = 11
@@ -1443,14 +1477,14 @@ function library:window(options)
             toggleBtn.TextSize = 14
             toggleBtn.TextXAlignment = Enum.TextXAlignment.Right
 
-            local separatorLine = Instance.new("Frame", groupBox)
+            local separatorLine = Instance.new("Frame", sectionBox)
             separatorLine.Name = "Separator"
             separatorLine.Size = UDim2.new(1, 0, 0, 1)
             separatorLine.BackgroundColor3 = currentTheme.Stroke
             separatorLine.BorderSizePixel = 0
             separatorLine.Visible = isOpen
 
-            local container = Instance.new("Frame", groupBox)
+            local container = Instance.new("Frame", sectionBox)
             container.Name = "Container"
             container.Size = UDim2.new(1, 0, 0, 0)
             container.BackgroundTransparency = 1
@@ -1466,61 +1500,41 @@ function library:window(options)
             cLayout.Padding = UDim.new(0, 5)
             cLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-            local isTweening = false
-
             if isOpen then
                 container.AutomaticSize = Enum.AutomaticSize.Y
                 container.Visible = true
-                groupBox.AutomaticSize = Enum.AutomaticSize.Y
+                sectionBox.AutomaticSize = Enum.AutomaticSize.Y
             else
                 container.AutomaticSize = Enum.AutomaticSize.None
                 container.Size = UDim2.new(1, 0, 0, 0)
                 container.Visible = false
-                groupBox.AutomaticSize = Enum.AutomaticSize.None
-                groupBox.Size = UDim2.new(1, 0, 0, 26)
+                separatorLine.Visible = false
+                sectionBox.AutomaticSize = Enum.AutomaticSize.None
+                sectionBox.Size = UDim2.new(1, 0, 0, 26)
             end
 
             toggleBtn.MouseButton1Click:Connect(function()
-                if isTweening then return end
-                isTweening = true
                 isOpen = not isOpen
                 toggleBtn.Text = isOpen and "-" or "+"
                 
-                local tInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
                 if isOpen then
                     separatorLine.Visible = true
                     container.Visible = true
                     container.AutomaticSize = Enum.AutomaticSize.Y
-                    
-                    local targetHeight = container.AbsoluteSize.Y + 27
-                    groupBox.AutomaticSize = Enum.AutomaticSize.None
-                    groupBox.Size = UDim2.new(1, 0, 0, targetHeight)
-
-                    local openTween = TweenService:Create(groupBox, tInfo, {Size = UDim2.new(1, 0, 0, targetHeight)})
-                    openTween:Play()
-                    openTween.Completed:Connect(function()
-                        groupBox.AutomaticSize = Enum.AutomaticSize.Y
-                        isTweening = false
-                    end)
+                    sectionBox.AutomaticSize = Enum.AutomaticSize.Y
                 else
-                    groupBox.AutomaticSize = Enum.AutomaticSize.None
+                    sectionBox.AutomaticSize = Enum.AutomaticSize.None
                     container.AutomaticSize = Enum.AutomaticSize.None
-                    
-                    local closeTween = TweenService:Create(groupBox, tInfo, {Size = UDim2.new(1, 0, 0, 26)})
-                    closeTween:Play()
-                    closeTween.Completed:Connect(function()
-                        container.Size = UDim2.new(1, 0, 0, 0)
-                        container.Visible = false
-                        separatorLine.Visible = false
-                        isTweening = false
-                    end)
+                    container.Size = UDim2.new(1, 0, 0, 0)
+                    container.Visible = false
+                    separatorLine.Visible = false
+                    sectionBox.Size = UDim2.new(1, 0, 0, 26)
                 end
             end)
 
-            local gbMethods = buatElementMethods(container)
-            gbMethods.Container = container
-            return gbMethods
+            local sectionMethods = buatElementMethods(container)
+            sectionMethods.Container = container
+            return sectionMethods
         end
 
         table.insert(self.Tabs, {Name = tabName, Button = button, Page = page, Card = frame, Scroll = scroll, TabObj = tabObj})  
