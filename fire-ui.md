@@ -9,7 +9,8 @@ local window = library:window({
     title = "Premium Hub Mobile",
     desc = "v1.2.5",
     transparent = 0.15,
-    theme = "neon"
+    theme = "neon",
+    autoshow = true
 })
 ```
 **theme**
@@ -106,6 +107,7 @@ Tab:AddDropdown({
     Values = {"Lobby", "Farm Zone", "VIP Room", "Shop"},
     Value = {"Lobby"},
     Multi = false,
+    Search = true,
     Callback = function(selected)
         print("hello world")
     end
