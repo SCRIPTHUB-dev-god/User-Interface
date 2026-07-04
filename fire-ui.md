@@ -40,13 +40,14 @@ window:AddTag({
 ```
 **tab**
 ```luau
-local tab = window:AddTab("main")
+local tabMain = window:AddTab("Main", "code")
 ```
 # utility
 **section**
 ```luau
 local mainBox = tab:AddSection({
     title = "Main Status",
+    icon = "home",
     open = true
 })
 ```
