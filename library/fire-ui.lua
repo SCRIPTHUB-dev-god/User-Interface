@@ -11,6 +11,31 @@ if oldGui then oldGui:Destroy() end
 local library = {}
 library.CurrentTheme = nil
 
+local iconMap = {
+    ["apple"] = "rbxassetid://10709761889",
+    ["clipboard"] = "rbxassetid://10709799288",
+    ["code"] = "rbxassetid://10709810463",
+    ["copy"] = "rbxassetid://10709812159",
+    ["eye"] = "rbxassetid://10723346959",
+    ["folder"] = "rbxassetid://10723387563",
+    ["globe"] = "rbxassetid://10723404337",
+    ["home"] = "rbxassetid://10723407389",
+    ["info"] = "rbxassetid://10723415903",
+    ["key"] = "rbxassetid://10723416652",
+    ["laptop"] = "rbxassetid://10723423881",
+    ["rocket"] = "rbxassetid://10734934585",
+    ["search"] = "rbxassetid://10734943674",
+    ["server"] = "rbxassetid://10734949856",
+    ["settings"] = "rbxassetid://10734950309",
+    ["shield"] = "rbxassetid://10734951847",
+    ["sprout"] = "rbxassetid://10734965572",
+    ["star"] = "rbxassetid://10734966248",
+    ["sword"] = "rbxassetid://10734975486",
+    ["swords"] = "rbxassetid://10734975692",
+    ["terminal"] = "rbxassetid://10734982144",
+    ["user"] = "rbxassetid://10747373176"
+}
+
 local themes = {
     dark = {
         MainBG = Color3.fromRGB(24, 24, 26),
@@ -18,7 +43,8 @@ local themes = {
         Stroke = Color3.fromRGB(55, 55, 60),
         ButtonBG = Color3.fromRGB(36, 36, 40),
         SectionBG = Color3.fromRGB(30, 30, 33),
-        Accent = Color3.fromRGB(140, 140, 140)
+        Accent = Color3.fromRGB(140, 140, 140),
+        IconCl = Color3.fromRGB(200, 200, 200)
     },
     neon = {
         MainBG = Color3.fromRGB(15, 12, 22),
@@ -26,7 +52,8 @@ local themes = {
         Stroke = Color3.fromRGB(0, 255, 204),
         ButtonBG = Color3.fromRGB(28, 22, 40),
         SectionBG = Color3.fromRGB(22, 17, 32),
-        Accent = Color3.fromRGB(255, 0, 127)
+        Accent = Color3.fromRGB(255, 0, 127),
+        IconCl = Color3.fromRGB(0, 255, 204)
     },
     ocean = {
         MainBG = Color3.fromRGB(12, 22, 32),
@@ -34,7 +61,8 @@ local themes = {
         Stroke = Color3.fromRGB(0, 150, 255),
         ButtonBG = Color3.fromRGB(20, 36, 52),
         SectionBG = Color3.fromRGB(16, 28, 42),
-        Accent = Color3.fromRGB(0, 200, 255)
+        Accent = Color3.fromRGB(0, 200, 255),
+        IconCl = Color3.fromRGB(0, 200, 255)
     },
     crimson = {
         MainBG = Color3.fromRGB(24, 14, 14),
@@ -42,14 +70,16 @@ local themes = {
         Stroke = Color3.fromRGB(180, 30, 30),
         ButtonBG = Color3.fromRGB(40, 20, 20),
         SectionBG = Color3.fromRGB(32, 16, 16),
-        Accent = Color3.fromRGB(255, 50, 50)
+        Accent = Color3.fromRGB(255, 50, 50),
+        IconCl = Color3.fromRGB(255, 50, 50)
     },
     golden = {
         MainBG = Color3.fromRGB(24, 22, 18),
         HeaderBG = Color3.fromRGB(16, 14, 12),
         Stroke = Color3.fromRGB(40, 35, 30),
         SectionBG = Color3.fromRGB(33, 28, 24),
-        Accent = Color3.fromRGB(255, 215, 0)
+        Accent = Color3.fromRGB(255, 215, 0),
+        IconCl = Color3.fromRGB(255, 215, 0)
     },
     light = {
         MainBG = Color3.fromRGB(125, 125, 130),
@@ -57,7 +87,8 @@ local themes = {
         Stroke = Color3.fromRGB(180, 180, 185),
         ButtonBG = Color3.fromRGB(145, 145, 150),
         SectionBG = Color3.fromRGB(110, 110, 115),
-        Accent = Color3.fromRGB(245, 245, 245)
+        Accent = Color3.fromRGB(245, 245, 245),
+        IconCl = Color3.fromRGB(95, 95, 100)
     },
     fire = {
         MainBG = Color3.fromRGB(25, 10, 5),
@@ -65,7 +96,8 @@ local themes = {
         Stroke = Color3.fromRGB(255, 69, 0),
         ButtonBG = Color3.fromRGB(45, 18, 10),
         SectionBG = Color3.fromRGB(35, 14, 8),
-        Accent = Color3.fromRGB(255, 140, 0)
+        Accent = Color3.fromRGB(255, 140, 0),
+        IconCl = Color3.fromRGB(255, 140, 0)
     }
 }
 
@@ -196,15 +228,12 @@ function library:window(options)
         window.ToggleKey = key
     end
 
-    local MainUI = Instance.new("Frame")
+    local MainUI = Instance.new("CanvasGroup")
     MainUI.Name = "MainUI"
     MainUI.Size = UDim2.new(0, 560, 0, 360)
     MainUI.AnchorPoint = Vector2.new(0.5, 0.5)
-    MainUI.Position = UDim2.new(0.5, 0, 0.6, 0)
     MainUI.BackgroundColor3 = currentTheme.MainBG
-    MainUI.BackgroundTransparency = bgTrans
     MainUI.BorderSizePixel = 0
-    MainUI.Visible = autoshow
     MainUI.Parent = ScreenGui
 
     local UIScale = Instance.new("UIScale")
@@ -215,6 +244,65 @@ function library:window(options)
     local MainStroke = Instance.new("UIStroke", MainUI)
     MainStroke.Color = currentTheme.Stroke
     MainStroke.Thickness = 2.5
+
+    local savedTogglePos = UDim2.new(0.05, 0, 0.1, 30)
+
+    local ToggleUI = Instance.new("CanvasGroup")
+    ToggleUI.Name = "ToggleUI"
+    ToggleUI.Size = UDim2.new(0, 135, 0, 36)
+    ToggleUI.BackgroundColor3 = currentTheme.MainBG
+    ToggleUI.BorderSizePixel = 0
+    ToggleUI.Parent = ScreenGui
+
+    Instance.new("UICorner", ToggleUI).CornerRadius = UDim.new(0, 18)
+    local ToggleStroke = Instance.new("UIStroke", ToggleUI)
+    ToggleStroke.Color = currentTheme.Stroke
+    ToggleStroke.Thickness = 2
+
+    local function showMainUI()
+        MainUI.Visible = true
+        ToggleUI.Visible = true
+        TweenService:Create(MainUI, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, 0, 0.6, 0), GroupTransparency = 0}):Play()
+        local t = TweenService:Create(ToggleUI, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2.new(-0.5, 0, savedTogglePos.Y.Scale, savedTogglePos.Y.Offset), GroupTransparency = 1})
+        t:Play()
+        t.Completed:Connect(function()
+            if MainUI.GroupTransparency == 0 then
+                ToggleUI.Visible = false
+            end
+        end)
+        playInitSound()
+    end
+
+    local function hideMainUI()
+        MainUI.Visible = true
+        ToggleUI.Visible = true
+        ToggleUI.Position = UDim2.new(-0.5, 0, savedTogglePos.Y.Scale, savedTogglePos.Y.Offset)
+        TweenService:Create(ToggleUI, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = savedTogglePos, GroupTransparency = 0}):Play()
+        local t = TweenService:Create(MainUI, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, 0, 1.5, 0), GroupTransparency = 1})
+        t:Play()
+        t.Completed:Connect(function()
+            if ToggleUI.GroupTransparency == 0 then
+                MainUI.Visible = false
+            end
+        end)
+    end
+
+    if autoshow then
+        MainUI.Visible = true
+        MainUI.Position = UDim2.new(0.5, 0, 0.6, 0)
+        MainUI.GroupTransparency = 0
+        ToggleUI.Visible = false
+        ToggleUI.Position = UDim2.new(-0.5, 0, savedTogglePos.Y.Scale, savedTogglePos.Y.Offset)
+        ToggleUI.GroupTransparency = 1
+        playInitSound()
+    else
+        MainUI.Visible = false
+        MainUI.Position = UDim2.new(0.5, 0, 1.5, 0)
+        MainUI.GroupTransparency = 1
+        ToggleUI.Visible = true
+        ToggleUI.Position = savedTogglePos
+        ToggleUI.GroupTransparency = 0
+    end
 
     local Header = Instance.new("Frame", MainUI)
     Header.Name = "Header"
@@ -274,7 +362,7 @@ function library:window(options)
 
     local vLine = Instance.new("Frame", Header)
     vLine.Name = "ProfileLine"
-    vLine.Size = UDim2.new(0, 2.5, 1, -3)
+    vLine.Size = UDim2.new(0, 1, 1, -3)
     vLine.Position = UDim2.new(0, 210, 0, 2)
     vLine.BackgroundColor3 = currentTheme.Stroke
     vLine.BorderSizePixel = 0
@@ -282,7 +370,7 @@ function library:window(options)
 
     local VLine = Instance.new("Frame", Header)
     VLine.Name = "ProfileLine"
-    VLine.Size = UDim2.new(0, 2.5, 1, -3)
+    VLine.Size = UDim2.new(0, 1, 1, -3)
     VLine.Position = UDim2.new(0, 130, 0, 2)
     VLine.BackgroundColor3 = currentTheme.Stroke
     VLine.BorderSizePixel = 0
@@ -290,7 +378,7 @@ function library:window(options)
     
     local xLine = Instance.new("Frame", Header)
     xLine.Name = "ProfileLine"
-    xLine.Size = UDim2.new(0, 2.5, 1, -3)
+    xLine.Size = UDim2.new(0, 1, 1, -3)
     xLine.Position = UDim2.new(0, 375, 0, 2)
     xLine.BackgroundColor3 = currentTheme.Stroke
     xLine.BackgroundTransparency = 1
@@ -299,7 +387,7 @@ function library:window(options)
     
     local headerStroke = Instance.new("Frame", Header)
     headerStroke.Name = "HeaderStroke"
-    headerStroke.Size = UDim2.new(1, 0, 0, 2.5)
+    headerStroke.Size = UDim2.new(1, 0, 0, 1)
     headerStroke.Position = UDim2.new(0, 0, 1, -1)
     headerStroke.BackgroundColor3 = currentTheme.Stroke
     headerStroke.BorderSizePixel = 0
@@ -325,7 +413,7 @@ function library:window(options)
 
     local LeftTabBar = Instance.new("Frame", MainUI)
     LeftTabBar.Name = "LeftTabBar"
-    LeftTabBar.Size = UDim2.new(0, 2.75, 1, -40)
+    LeftTabBar.Size = UDim2.new(0, 1, 1, -40)
     LeftTabBar.Position = UDim2.new(0, 90, 0, 40)
     LeftTabBar.BackgroundColor3 = currentTheme.Stroke
     LeftTabBar.BorderSizePixel = 0
@@ -367,7 +455,7 @@ function library:window(options)
 
     local sideLine = Instance.new("Frame", Sidebar)
     sideLine.Name = "SideLine"
-    sideLine.Size = UDim2.new(1, 0, 0, 2.5)
+    sideLine.Size = UDim2.new(1, 0, 0, 1)
     sideLine.Position = UDim2.new(0, 0, 0, 44)
     sideLine.BackgroundColor3 = currentTheme.Stroke
     sideLine.BorderSizePixel = 0
@@ -460,30 +548,16 @@ function library:window(options)
         end
     end)
 
-    local ToggleUI = Instance.new("Frame")
-    ToggleUI.Name = "ToggleUI"
-    ToggleUI.Size = UDim2.new(0, 135, 0, 36)
-    ToggleUI.Position = UDim2.new(0.05, 0, 0.1, 30)
-    ToggleUI.BackgroundColor3 = currentTheme.MainBG
-    ToggleUI.BackgroundTransparency = bgTrans
-    ToggleUI.BorderSizePixel = 0
-    ToggleUI.Visible = not autoshow
-    ToggleUI.Parent = ScreenGui
-
-    Instance.new("UICorner", ToggleUI).CornerRadius = UDim.new(0, 18)
-    local ToggleStroke = Instance.new("UIStroke", ToggleUI)
-    ToggleStroke.Color = currentTheme.Stroke
-    ToggleStroke.Thickness = 2
-
     local dragIcon = Instance.new("ImageButton", ToggleUI)
     dragIcon.Name = "DragIcon"
     dragIcon.Size = UDim2.new(0, 19, 0, 19)
     dragIcon.Position = UDim2.new(0, 9, 0.5, -10)
     dragIcon.BackgroundTransparency = 1
     dragIcon.Image = "rbxassetid://10734900011"
+    dragIcon.ImageColor3 = currentTheme.IconCl
 
     local toggleLine = Instance.new("Frame", ToggleUI)
-    toggleLine.Size = UDim2.new(0, 2, 0, 18)
+    toggleLine.Size = UDim2.new(0, 1, 0, 18)
     toggleLine.Position = UDim2.new(0, 38, 0.5, -9)
     toggleLine.BackgroundColor3 = currentTheme.Stroke
     toggleLine.BorderSizePixel = 0
@@ -504,11 +578,7 @@ function library:window(options)
     toggleClick.BackgroundTransparency = 1
     toggleClick.Text = ""
 
-    toggleClick.MouseButton1Click:Connect(function()
-        MainUI.Visible = true
-        ToggleUI.Visible = false
-        playInitSound()
-    end)
+    toggleClick.MouseButton1Click:Connect(showMainUI)
 
     local tDragging, tDragInput, tDragStart, tStartPos
     dragIcon.InputBegan:Connect(function(input)
@@ -533,26 +603,21 @@ function library:window(options)
     UIS.InputChanged:Connect(function(input)
         if input == tDragInput and tDragging then
             local delta = input.Position - tDragStart
-            ToggleUI.Position = UDim2.new(tStartPos.X.Scale, tStartPos.X.Offset + delta.X, tStartPos.Y.Scale, tStartPos.Y.Offset + delta.Y)
+            local newPos = UDim2.new(tStartPos.X.Scale, tStartPos.X.Offset + delta.X, tStartPos.Y.Scale, tStartPos.Y.Offset + delta.Y)
+            ToggleUI.Position = newPos
+            savedTogglePos = newPos
         end
     end)
 
     UIS.InputBegan:Connect(function(input, processed)
         if not processed and input.KeyCode == window.ToggleKey then
-            if MainUI.Visible then
-                MainUI.Visible = false
-                ToggleUI.Visible = true
+            if MainUI.Visible and MainUI.GroupTransparency < 0.5 then
+                hideMainUI()
             else
-                MainUI.Visible = true
-                ToggleUI.Visible = false
-                playInitSound()
+                showMainUI()
             end
         end
     end)
-
-    if autoshow then
-        playInitSound()
-    end
 
     local DestroyDialog = Instance.new("Frame")
     DestroyDialog.Name = "DestroyDialog"
@@ -610,7 +675,12 @@ function library:window(options)
         s.SoundId = "rbxassetid://111617177185247"
         s.Volume = 2
         s:Play()
-        ScreenGui:Destroy()
+        
+        local t1 = TweenService:Create(MainUI, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {GroupTransparency = 1})
+        t1:Play()
+        t1.Completed:Connect(function()
+            ScreenGui:Destroy()
+        end)
     end)
 
     noBtn.MouseButton1Click:Connect(function()
@@ -635,32 +705,23 @@ function library:window(options)
     yellowBtn.ZIndex = 7
     Instance.new("UICorner", yellowBtn).CornerRadius = UDim.new(1, 0)
 
-    yellowBtn.MouseButton1Click:Connect(function()
-        MainUI.Visible = false
-        ToggleUI.Visible = true
-    end)
+    yellowBtn.MouseButton1Click:Connect(hideMainUI)
 
     redBtn.MouseButton1Click:Connect(function()
         DestroyDialog.Visible = true
     end)
 
-    local function buatButton(nama, teks)
-        local btn = Instance.new("TextButton")
+    local function buatButton(nama, iconName)
+        local btn = Instance.new("ImageButton")
         btn.Name = nama
-        btn.Size = UDim2.new(1, -12, 0, 34)
+        btn.Size = UDim2.new(0, 45, 0, 45)
         btn.BackgroundColor3 = currentTheme.ButtonBG
         btn.BackgroundTransparency = bgTrans
-        btn.Text = teks
-        btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-        btn.Font = Enum.Font.GothamMedium
-        btn.TextSize = 14
+        btn.Image = iconMap[iconName] or iconMap["code"]
+        btn.ImageColor3 = currentTheme.IconCl
         btn.AutoButtonColor = false
         btn.ZIndex = 6
         btn.Parent = SidebarScroll
-        btn.TextScaled = true
-        
-        local btnConstraint = Instance.new("UITextSizeConstraint", btn)
-        btnConstraint.MaxTextSize = 14
         
         local corner = Instance.new("UICorner", btn)
         corner.CornerRadius = UDim.new(0, 8)
@@ -676,6 +737,7 @@ function library:window(options)
         local tagColor = tagOptions.color or Color3.fromRGB(40, 40, 40)
         local canClick = tagOptions.getclick or false
         local callback = tagOptions.callback or function() end
+        local tagIcon = tagOptions.icon
 
         totalTags = totalTags + 1
         if totalTags > 0 then
@@ -687,10 +749,13 @@ function library:window(options)
         tagBtn.Size = UDim2.new(0, 0, 0, 22)
         tagBtn.AutomaticSize = Enum.AutomaticSize.X
         tagBtn.BackgroundColor3 = tagColor
-        tagBtn.Text = tagTitle
-        tagBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        tagBtn.Font = Enum.Font.GothamBold
-        tagBtn.TextSize = 11
+        tagBtn.Text = ""
+
+        local tagLayout = Instance.new("UIListLayout", tagBtn)
+        tagLayout.FillDirection = Enum.FillDirection.Horizontal
+        tagLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        tagLayout.Padding = UDim.new(0, 4)
+        tagLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 
         local tagPadding = Instance.new("UIPadding", tagBtn)
         tagPadding.PaddingLeft = UDim.new(0, 8)
@@ -702,6 +767,27 @@ function library:window(options)
         local tagStroke = Instance.new("UIStroke", tagBtn)
         tagStroke.Color = currentTheme.Stroke
         tagStroke.Thickness = 1
+
+        if tagIcon and iconMap[tagIcon] then
+            local iconImg = Instance.new("ImageLabel", tagBtn)
+            iconImg.Name = "TagIcon"
+            iconImg.Size = UDim2.new(0, 12, 0, 12)
+            iconImg.BackgroundTransparency = 1
+            iconImg.Image = iconMap[tagIcon]
+            iconImg.ImageColor3 = Color3.fromRGB(255, 255, 255)
+            iconImg.LayoutOrder = 1
+        end
+
+        local textLabel = Instance.new("TextLabel", tagBtn)
+        textLabel.Name = "TagText"
+        textLabel.Size = UDim2.new(0, 0, 1, 0)
+        textLabel.AutomaticSize = Enum.AutomaticSize.X
+        textLabel.BackgroundTransparency = 1
+        textLabel.Text = tagTitle
+        textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        textLabel.Font = Enum.Font.GothamBold
+        textLabel.TextSize = 11
+        textLabel.LayoutOrder = 2
 
         if canClick then
             tagBtn.MouseButton1Click:Connect(callback)
@@ -756,7 +842,7 @@ function library:window(options)
             icon.Position = UDim2.new(1, -24, 0.5, -8)
             icon.BackgroundTransparency = 1
             icon.Image = "rbxassetid://10734898355"
-            icon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+            icon.ImageColor3 = currentTheme.IconCl
 
             local clickBtn = Instance.new("TextButton", btnFrame)
             clickBtn.Size = UDim2.new(1, 0, 1, 0)
@@ -1438,9 +1524,9 @@ function library:window(options)
         return methods
     end
 
-    function window:AddTab(tabName)
+    function window:AddTab(tabName, iconName)
         local tabIndex = #self.Tabs + 1
-        local button = buatButton(tabName.."Btn", tabName)
+        local button = buatButton(tabName.."Btn", iconName or "code")
 
         local page = Instance.new("Frame", ContentHolder)  
         page.Name = tabName  
@@ -1492,11 +1578,11 @@ function library:window(options)
                 local oldTab = window.CurrentTab
                 
                 oldTab.Button.BackgroundColor3 = currentTheme.ButtonBG  
-                oldTab.Button.TextColor3 = Color3.fromRGB(200, 200, 200)  
+                oldTab.Button.ImageColor3 = currentTheme.IconCl
                 oldTab.Page.Visible = false
                 
                 button.BackgroundColor3 = currentTheme.Accent  
-                button.TextColor3 = Color3.fromRGB(255, 255, 255)  
+                button.ImageColor3 = Color3.fromRGB(255, 255, 255)  
                 
                 page.Position = UDim2.new(0, 0, 0, 0)
                 page.Visible = true
@@ -1514,6 +1600,7 @@ function library:window(options)
         function tabObj:AddSection(sectionOptions)
             sectionOptions = sectionOptions or {}
             local sectionTitle = sectionOptions.title or "Section"
+            local sectionIcon = sectionOptions.icon
             local isOpen = sectionOptions.open ~= false
 
             local sectionBox = Instance.new("Frame", scroll)
@@ -1542,8 +1629,21 @@ function library:window(options)
             topPad.PaddingLeft = UDim.new(0, 8)
             topPad.PaddingRight = UDim.new(0, 8)
 
+            local hasIcon = sectionIcon and iconMap[sectionIcon]
+            if hasIcon then
+                local sIcon = Instance.new("ImageLabel", topBar)
+                sIcon.Name = "SectionIcon"
+                sIcon.Size = UDim2.new(0, 14, 0, 14)
+                sIcon.Position = UDim2.new(0, 0, 0.5, -7)
+                sIcon.BackgroundTransparency = 1
+                sIcon.Image = iconMap[sectionIcon]
+                sIcon.ImageColor3 = currentTheme.IconCl
+                sIcon.ZIndex = 6
+            end
+
             local titleLabel = Instance.new("TextLabel", topBar)
-            titleLabel.Size = UDim2.new(0.7, 0, 1, 0)
+            titleLabel.Size = UDim2.new(0.7, hasIcon and -18 or 0, 1, 0)
+            titleLabel.Position = hasIcon and UDim2.new(0, 18, 0, 0) or UDim2.new(0, 0, 0, 0)
             titleLabel.BackgroundTransparency = 1
             titleLabel.Text = sectionTitle
             titleLabel.TextColor3 = Color3.fromRGB(230, 230, 230)
@@ -1623,7 +1723,7 @@ function library:window(options)
         if #self.Tabs == 1 then  
             page.Visible = true  
             button.BackgroundColor3 = currentTheme.Accent  
-            button.TextColor3 = Color3.fromRGB(255, 255, 255)  
+            button.ImageColor3 = Color3.fromRGB(255, 255, 255)  
             tabLabel.Text = tabName 
             window.CurrentTab = {Page = page, Button = button, Index = 1}
         end  
