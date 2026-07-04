@@ -18,10 +18,15 @@ local window = library:window({
 `dark`,`neon`,`ocean`
 `golden`,`light`,`fire`
 
+**icon support**
+
+`apple`,`clipboard`,`code`,`copy`,`eye`,`folder`,`globe`,`home`,`info`,`key`,`laptop`,`rocket`,`search`,`server`,`settings`,`shield`,`sprout`,`star`,`sword`,`swords`,`terminal`,`user`
+
 **tag**
 ```luau
 window:AddTag({
     title = "Click Me",
+    icon = "globe",
     color = Color3.fromRGB(180, 30, 30),
     getclick = true,
     callback = function()
@@ -57,7 +62,8 @@ dark = {
         Stroke = Color3.fromRGB(55, 55, 60),
         ButtonBG = Color3.fromRGB(36, 36, 40),
         SectionBG = Color3.fromRGB(30, 30, 33),
-        Accent = Color3.fromRGB(140, 140, 140)
+        Accent = Color3.fromRGB(140, 140, 140),
+        IconCl = Color3.fromRGB(200, 200, 200)
     }
 ```
 **divider**
