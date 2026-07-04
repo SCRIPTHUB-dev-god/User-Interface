@@ -172,6 +172,20 @@ function library:window(options)
     local currentTheme = themes[selectedTheme:lower()] or themes.dark
     library.CurrentTheme = currentTheme
 
+    local autoshow = options.autoshow
+    if autoshow == nil then autoshow = true end
+
+    local soundPlayed = false
+    local function playInitSound()
+        if not soundPlayed then
+            soundPlayed = true
+            local s = Instance.new("Sound", game.SoundService)
+            s.SoundId = "rbxassetid://126047015098640"
+            s.Volume = 2
+            s:Play()
+        end
+    end
+
     local window = {}
     window.Tabs = {}
     window.CurrentTab = nil
@@ -190,6 +204,7 @@ function library:window(options)
     MainUI.BackgroundColor3 = currentTheme.MainBG
     MainUI.BackgroundTransparency = bgTrans
     MainUI.BorderSizePixel = 0
+    MainUI.Visible = autoshow
     MainUI.Parent = ScreenGui
 
     local UIScale = Instance.new("UIScale")
@@ -452,7 +467,7 @@ function library:window(options)
     ToggleUI.BackgroundColor3 = currentTheme.MainBG
     ToggleUI.BackgroundTransparency = bgTrans
     ToggleUI.BorderSizePixel = 0
-    ToggleUI.Visible = false
+    ToggleUI.Visible = not autoshow
     ToggleUI.Parent = ScreenGui
 
     Instance.new("UICorner", ToggleUI).CornerRadius = UDim.new(0, 18)
@@ -492,6 +507,7 @@ function library:window(options)
     toggleClick.MouseButton1Click:Connect(function()
         MainUI.Visible = true
         ToggleUI.Visible = false
+        playInitSound()
     end)
 
     local tDragging, tDragInput, tDragStart, tStartPos
@@ -529,9 +545,14 @@ function library:window(options)
             else
                 MainUI.Visible = true
                 ToggleUI.Visible = false
+                playInitSound()
             end
         end
     end)
+
+    if autoshow then
+        playInitSound()
+    end
 
     local DestroyDialog = Instance.new("Frame")
     DestroyDialog.Name = "DestroyDialog"
@@ -585,6 +606,10 @@ function library:window(options)
     noStroke.Thickness = 1
 
     yesBtn.MouseButton1Click:Connect(function()
+        local s = Instance.new("Sound", game.SoundService)
+        s.SoundId = "rbxassetid://111617177185247"
+        s.Volume = 2
+        s:Play()
         ScreenGui:Destroy()
     end)
 
@@ -809,6 +834,7 @@ function library:window(options)
             local list = ddOptions.Values or {}
             local selected = ddOptions.Value or {}
             local isMulti = ddOptions.Multi or false
+            local search = ddOptions.Search or false
             local callback = ddOptions.Callback or function() end
 
             local ddFrame = Instance.new("Frame", containerFrame)
@@ -857,14 +883,41 @@ function library:window(options)
             arrow.TextSize = 12
 
             local dropList = Instance.new("Frame", ddFrame)
-            dropList.Size = UDim2.new(1, 0, 0, #list * 28)
+            local initialListHeight = #list * 28
+            if search then initialListHeight = initialListHeight + 30 end
+            dropList.Size = UDim2.new(1, 0, 0, initialListHeight)
             dropList.Position = UDim2.new(0, 0, 0, 36)
             dropList.BackgroundTransparency = 1
 
             local dlLayout = Instance.new("UIListLayout", dropList)
             dlLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
+            local searchContainer
+            local searchBox
+            if search then
+                searchContainer = Instance.new("Frame", dropList)
+                searchContainer.Size = UDim2.new(1, 0, 0, 30)
+                searchContainer.BackgroundTransparency = 1
+                searchContainer.LayoutOrder = 0
+                
+                searchBox = Instance.new("TextBox", searchContainer)
+                searchBox.Size = UDim2.new(1, -16, 0, 24)
+                searchBox.Position = UDim2.new(0, 8, 0.5, -12)
+                searchBox.BackgroundColor3 = currentTheme.SectionBG
+                searchBox.Text = ""
+                searchBox.PlaceholderText = "search.."
+                searchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                searchBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
+                searchBox.Font = Enum.Font.Gotham
+                searchBox.TextSize = 12
+                Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 4)
+                local sBStroke = Instance.new("UIStroke", searchBox)
+                sBStroke.Color = currentTheme.Stroke
+                sBStroke.Thickness = 1
+            end
+
             local expanded = false
+            local optionButtons = {}
 
             local function refreshSelected()
                 choiceText.Text = table.concat(selected, ", ")
@@ -886,6 +939,9 @@ function library:window(options)
                 opt.TextSize = 12
                 opt.TextXAlignment = Enum.TextXAlignment.Left
                 opt.BorderSizePixel = 0
+                opt.LayoutOrder = i
+
+                table.insert(optionButtons, {Button = opt, Value = val})
 
                 opt.MouseButton1Click:Connect(function()
                     if isMulti then
@@ -917,9 +973,37 @@ function library:window(options)
                 end)
             end
 
+            if search and searchBox then
+                searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+                    local searchText = searchBox.Text:lower()
+                    local visibleCount = 0
+                    for _, item in ipairs(optionButtons) do
+                        if searchText == "" or item.Value:lower():find(searchText) then
+                            item.Button.Visible = true
+                            visibleCount = visibleCount + 1
+                        else
+                            item.Button.Visible = false
+                        end
+                    end
+                    local newHeight = (visibleCount * 28) + 30
+                    dropList.Size = UDim2.new(1, 0, 0, newHeight)
+                    if expanded then
+                        ddFrame.Size = UDim2.new(1, 0, 0, 36 + newHeight)
+                    end
+                end)
+            end
+
             top.MouseButton1Click:Connect(function()
                 expanded = not expanded
-                local targetSize = expanded and UDim2.new(1, 0, 0, 36 + (#list * 28)) or UDim2.new(1, 0, 0, 36)
+                local currentHeight = 0
+                if expanded then
+                    local visibleCount = 0
+                    for _, item in ipairs(optionButtons) do
+                        if item.Button.Visible then visibleCount = visibleCount + 1 end
+                    end
+                    currentHeight = (visibleCount * 28) + (search and 30 or 0)
+                end
+                local targetSize = expanded and UDim2.new(1, 0, 0, 36 + currentHeight) or UDim2.new(1, 0, 0, 36)
                 TweenService:Create(ddFrame, TweenInfo.new(0.2), {Size = targetSize}):Play()
                 arrow.Text = expanded and "^" or "v"
             end)
@@ -1467,15 +1551,12 @@ function library:window(options)
             titleLabel.TextSize = 11
             titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-            local toggleBtn = Instance.new("TextButton", topBar)
-            toggleBtn.Size = UDim2.new(0.3, 0, 1, 0)
-            toggleBtn.Position = UDim2.new(0.7, 0, 0, 0)
+            local toggleBtn = Instance.new("ImageButton", topBar)
+            toggleBtn.Size = UDim2.new(0, 16, 0, 16)
+            toggleBtn.Position = UDim2.new(1, -16, 0.5, -8)
             toggleBtn.BackgroundTransparency = 1
-            toggleBtn.Text = isOpen and "-" or "+"
-            toggleBtn.TextColor3 = Color3.fromRGB(130, 130, 130)
-            toggleBtn.Font = Enum.Font.GothamBold
-            toggleBtn.TextSize = 14
-            toggleBtn.TextXAlignment = Enum.TextXAlignment.Right
+            toggleBtn.Image = isOpen and "rbxassetid://10709791523" or "rbxassetid://10709790948"
+            toggleBtn.ImageColor3 = Color3.fromRGB(130, 130, 130)
 
             local separatorLine = Instance.new("Frame", sectionBox)
             separatorLine.Name = "Separator"
@@ -1515,7 +1596,7 @@ function library:window(options)
 
             toggleBtn.MouseButton1Click:Connect(function()
                 isOpen = not isOpen
-                toggleBtn.Text = isOpen and "-" or "+"
+                toggleBtn.Image = isOpen and "rbxassetid://10709791523" or "rbxassetid://10709790948"
                 
                 if isOpen then
                     separatorLine.Visible = true
