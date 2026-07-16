@@ -10,7 +10,8 @@ local window = library:window({
     desc = "v1.2.5",
     transparent = 0.15,
     theme = "neon",
-    autoshow = true
+    autoshow = true,
+    addbacksound = true
 })
 ```
 **theme**
@@ -58,6 +59,10 @@ library:Notification({
     desc = "hello world",
     duration = 5
 })
+```
+**destroy ui**
+```luau
+window:destroy
 ```
 **set theme**
 ```luau
