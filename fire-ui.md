@@ -60,10 +60,6 @@ library:Notification({
     duration = 5
 })
 ```
-**destroy ui**
-```luau
-window:destroy
-```
 **set theme**
 ```luau
 dark = {
