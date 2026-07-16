@@ -207,9 +207,12 @@ function library:window(options)
     local autoshow = options.autoshow
     if autoshow == nil then autoshow = true end
 
+    local addbacksound = options.addbacksound
+    if addbacksound == nil then addbacksound = false end
+
     local soundPlayed = false
     local function playInitSound()
-        if not soundPlayed then
+        if addbacksound and not soundPlayed then
             soundPlayed = true
             local s = Instance.new("Sound", game.SoundService)
             s.SoundId = "rbxassetid://126047015098640"
@@ -233,6 +236,7 @@ function library:window(options)
     MainUI.Size = UDim2.new(0, 560, 0, 360)
     MainUI.AnchorPoint = Vector2.new(0.5, 0.5)
     MainUI.BackgroundColor3 = currentTheme.MainBG
+    MainUI.BackgroundTransparency = bgTrans
     MainUI.BorderSizePixel = 0
     MainUI.Parent = ScreenGui
 
@@ -251,6 +255,7 @@ function library:window(options)
     ToggleUI.Name = "ToggleUI"
     ToggleUI.Size = UDim2.new(0, 135, 0, 36)
     ToggleUI.BackgroundColor3 = currentTheme.MainBG
+    ToggleUI.BackgroundTransparency = bgTrans
     ToggleUI.BorderSizePixel = 0
     ToggleUI.Parent = ScreenGui
 
@@ -380,7 +385,6 @@ function library:window(options)
     xLine.Name = "ProfileLine"
     xLine.Size = UDim2.new(0, 1, 1, -3)
     xLine.Position = UDim2.new(0, 375, 0, 2)
-    xLine.BackgroundColor3 = currentTheme.Stroke
     xLine.BackgroundTransparency = 1
     xLine.BorderSizePixel = 0
     xLine.ZIndex = 5
@@ -478,9 +482,11 @@ function library:window(options)
 
     function window:AddDivider()
         local line = Instance.new("Frame", SidebarScroll)
-        line.Size = UDim2.new(1, -12, 0, 1)
+        line.Size = UDim2.new(1, -12, 0, 3)
         line.BackgroundColor3 = currentTheme.Stroke
         line.BorderSizePixel = 0
+        local corner = Instance.new("UICorner", line)
+        corner.CornerRadius = UDim.new(1, 0)
     end
 
     local ContentHolder = Instance.new("Frame", MainUI)
@@ -625,6 +631,7 @@ function library:window(options)
     DestroyDialog.AnchorPoint = Vector2.new(0.5, 0.5)
     DestroyDialog.Position = UDim2.new(0.5, 0, 0.5, 0)
     DestroyDialog.BackgroundColor3 = currentTheme.SectionBG
+    DestroyDialog.BackgroundTransparency = bgTrans
     DestroyDialog.BorderSizePixel = 0
     DestroyDialog.Visible = false
     DestroyDialog.ZIndex = 20
@@ -660,6 +667,7 @@ function library:window(options)
     noBtn.Size = UDim2.new(0.4, 0, 0, 32)
     noBtn.Position = UDim2.new(0.52, 0, 1, -45)
     noBtn.BackgroundColor3 = currentTheme.ButtonBG
+    noBtn.BackgroundTransparency = bgTrans
     noBtn.Text = "No"
     noBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
     noBtn.Font = Enum.Font.GothamMedium
@@ -670,17 +678,22 @@ function library:window(options)
     noStroke.Color = currentTheme.Stroke
     noStroke.Thickness = 1
 
-    yesBtn.MouseButton1Click:Connect(function()
-        local s = Instance.new("Sound", game.SoundService)
-        s.SoundId = "rbxassetid://111617177185247"
-        s.Volume = 2
-        s:Play()
-        
+    function window:destroy()
+        if addbacksound then
+            local s = Instance.new("Sound", game.SoundService)
+            s.SoundId = "rbxassetid://111617177185247"
+            s.Volume = 2
+            s:Play()
+        end
         local t1 = TweenService:Create(MainUI, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {GroupTransparency = 1})
         t1:Play()
         t1.Completed:Connect(function()
             ScreenGui:Destroy()
         end)
+    end
+
+    yesBtn.MouseButton1Click:Connect(function()
+        window:destroy()
     end)
 
     noBtn.MouseButton1Click:Connect(function()
@@ -749,6 +762,7 @@ function library:window(options)
         tagBtn.Size = UDim2.new(0, 0, 0, 22)
         tagBtn.AutomaticSize = Enum.AutomaticSize.X
         tagBtn.BackgroundColor3 = tagColor
+        tagBtn.BackgroundTransparency = bgTrans
         tagBtn.Text = ""
 
         local tagLayout = Instance.new("UIListLayout", tagBtn)
@@ -805,9 +819,11 @@ function library:window(options)
 
         function methods:AddDivider()
             local line = Instance.new("Frame", containerFrame)
-            line.Size = UDim2.new(1, 0, 0, 1)
+            line.Size = UDim2.new(1, 0, 0, 3)
             line.BackgroundColor3 = currentTheme.Stroke
             line.BorderSizePixel = 0
+            local corner = Instance.new("UICorner", line)
+            corner.CornerRadius = UDim.new(1, 0)
         end
 
         function methods:Addbutton(btnOptions)
@@ -990,6 +1006,7 @@ function library:window(options)
                 searchBox.Size = UDim2.new(1, -16, 0, 24)
                 searchBox.Position = UDim2.new(0, 8, 0.5, -12)
                 searchBox.BackgroundColor3 = currentTheme.SectionBG
+                searchBox.BackgroundTransparency = bgTrans
                 searchBox.Text = ""
                 searchBox.PlaceholderText = "search.."
                 searchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1289,6 +1306,7 @@ function library:window(options)
             bindBox.Size = UDim2.new(0, 45, 0, 20)
             bindBox.Position = UDim2.new(1, -53, 0.5, -10)
             bindBox.BackgroundColor3 = currentTheme.SectionBG
+            bindBox.BackgroundTransparency = bgTrans
             bindBox.Text = currentKey
             bindBox.TextColor3 = currentTheme.Accent
             bindBox.Font = Enum.Font.GothamBold
@@ -1352,6 +1370,7 @@ function library:window(options)
             textBox.Position = UDim2.new(1, -8, 0.5, -12)
             textBox.AnchorPoint = Vector2.new(1, 0)
             textBox.BackgroundColor3 = currentTheme.SectionBG
+            textBox.BackgroundTransparency = bgTrans
             textBox.Text = default
             textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
             textBox.Font = Enum.Font.Gotham
@@ -1605,7 +1624,6 @@ function library:window(options)
 
             local sectionBox = Instance.new("Frame", scroll)
             sectionBox.Name = sectionTitle .. "Sec"
-            sectionBox.Size = UDim2.new(1, 0, 0, 26)
             sectionBox.BackgroundColor3 = currentTheme.SectionBG
             sectionBox.BackgroundTransparency = bgTrans
             sectionBox.BorderSizePixel = 0
@@ -1667,7 +1685,6 @@ function library:window(options)
 
             local container = Instance.new("Frame", sectionBox)
             container.Name = "Container"
-            container.Size = UDim2.new(1, 0, 0, 0)
             container.BackgroundTransparency = 1
             container.ClipsDescendants = true
 
@@ -1681,36 +1698,28 @@ function library:window(options)
             cLayout.Padding = UDim.new(0, 5)
             cLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-            if isOpen then
-                container.AutomaticSize = Enum.AutomaticSize.Y
-                container.Visible = true
-                sectionBox.AutomaticSize = Enum.AutomaticSize.Y
-            else
-                container.AutomaticSize = Enum.AutomaticSize.None
-                container.Size = UDim2.new(1, 0, 0, 0)
-                container.Visible = false
-                separatorLine.Visible = false
-                sectionBox.AutomaticSize = Enum.AutomaticSize.None
-                sectionBox.Size = UDim2.new(1, 0, 0, 26)
+            container.Size = UDim2.new(1, 0, 0, 0)
+            container.AutomaticSize = Enum.AutomaticSize.Y
+
+            local function updateSectionLayout()
+                local targetHeight = isOpen and (26 + 1 + cLayout.AbsoluteContentSize.Y + 12) or 26
+                separatorLine.Visible = isOpen
+                TweenService:Create(sectionBox, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, targetHeight)}):Play()
             end
+
+            sectionBox.Size = isOpen and UDim2.new(1, 0, 0, 26 + 1 + cLayout.AbsoluteContentSize.Y + 12) or UDim2.new(1, 0, 0, 26)
+            
+            task.spawn(function()
+                task.wait()
+                if isOpen then
+                    sectionBox.Size = UDim2.new(1, 0, 0, 26 + 1 + cLayout.AbsoluteContentSize.Y + 12)
+                end
+            end)
 
             toggleBtn.MouseButton1Click:Connect(function()
                 isOpen = not isOpen
                 toggleBtn.Image = isOpen and "rbxassetid://10709791523" or "rbxassetid://10709790948"
-                
-                if isOpen then
-                    separatorLine.Visible = true
-                    container.Visible = true
-                    container.AutomaticSize = Enum.AutomaticSize.Y
-                    sectionBox.AutomaticSize = Enum.AutomaticSize.Y
-                else
-                    sectionBox.AutomaticSize = Enum.AutomaticSize.None
-                    container.AutomaticSize = Enum.AutomaticSize.None
-                    container.Size = UDim2.new(1, 0, 0, 0)
-                    container.Visible = false
-                    separatorLine.Visible = false
-                    sectionBox.Size = UDim2.new(1, 0, 0, 26)
-                end
+                updateSectionLayout()
             end)
 
             local sectionMethods = buatElementMethods(container)
