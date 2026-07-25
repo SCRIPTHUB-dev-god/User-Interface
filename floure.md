@@ -2,7 +2,7 @@
 
 ## Loading the Library
 ```lua
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Mc4121ban/Fluriore-UI/main/source.lua"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/User-Interface/refs/heads/main/library/Fluriore-UI-remake.lua"))()
 ```
 
 ## Creating a Window
