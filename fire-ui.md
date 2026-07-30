@@ -44,13 +44,10 @@ window:AddTag({
 local tabMain = window:AddTab("Main", "code")
 ```
 # utility
-**section**
+**Tabbox**
 ```luau
-local mainBox = tab:AddSection({
-    title = "Main Status",
-    icon = "home",
-    open = true
-})
+local tab = tabMain:AddTabbox()
+local Mainbox = tab:AddTab("Main")
 ```
 **notification**
 ```luau
@@ -59,18 +56,6 @@ library:Notification({
     desc = "hello world",
     duration = 5
 })
-```
-**set theme**
-```luau
-dark = {
-        MainBG = Color3.fromRGB(24, 24, 26),
-        HeaderBG = Color3.fromRGB(15, 15, 15),
-        Stroke = Color3.fromRGB(55, 55, 60),
-        ButtonBG = Color3.fromRGB(36, 36, 40),
-        SectionBG = Color3.fromRGB(30, 30, 33),
-        Accent = Color3.fromRGB(140, 140, 140),
-        IconCl = Color3.fromRGB(200, 200, 200)
-    }
 ```
 **divider**
 ```luau
