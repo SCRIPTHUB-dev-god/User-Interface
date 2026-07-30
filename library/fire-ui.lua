@@ -1786,22 +1786,20 @@ function library:window(options)
             local subTabLayout = Instance.new("UIListLayout", subTabBar)
             subTabLayout.FillDirection = Enum.FillDirection.Horizontal
             subTabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-            subTabLayout.Padding = UDim.new(0, 6)
+            subTabLayout.Padding = UDim.new(0, 4)
 
-            local subPagesHolder = Instance.new("Frame", tabboxBox)
-            subPagesHolder.Name = "SubPagesHolder"
-            subPagesHolder.Size = UDim2.new(1, 0, 0, 0)
-            subPagesHolder.AutomaticSize = Enum.AutomaticSize.Y
-            subPagesHolder.BackgroundTransparency = 1
-            subPagesHolder.LayoutOrder = 2
+            local subTabPages = Instance.new("Frame", tabboxBox)
+            subTabPages.Name = "SubTabPages"
+            subTabPages.Size = UDim2.new(1, 0, 0, 0)
+            subTabPages.AutomaticSize = Enum.AutomaticSize.Y
+            subTabPages.BackgroundTransparency = 1
+            subTabPages.LayoutOrder = 2
 
-            local tabboxObj = {}
-            tabboxObj.SubTabs = {}
-            tabboxObj.CurrentSubTab = nil
+            local subTabMethods = {}
+            subTabMethods.SubTabs = {}
+            subTabMethods.CurrentSubTab = nil
 
-            function tabboxObj:AddTab(subTabName)
-                local subIndex = #tabboxObj.SubTabs + 1
-
+            function subTabMethods:AddTab(subTabName)
                 local subTabBtn = Instance.new("TextButton", subTabBar)
                 subTabBtn.Name = subTabName .. "Btn"
                 subTabBtn.Size = UDim2.new(0, 0, 0, 24)
@@ -1813,74 +1811,70 @@ function library:window(options)
                 subTabBtn.Font = Enum.Font.GothamMedium
                 subTabBtn.TextSize = 11
 
-                local sCorner = Instance.new("UICorner", subTabBtn)
-                sCorner.CornerRadius = UDim.new(0, 4)
+                local btnCorner = Instance.new("UICorner", subTabBtn)
+                btnCorner.CornerRadius = UDim.new(0, 4)
 
-                local sStroke = Instance.new("UIStroke", subTabBtn)
-                sStroke.Color = currentTheme.Stroke
-                sStroke.Thickness = 1
+                local btnPadding = Instance.new("UIPadding", subTabBtn)
+                btnPadding.PaddingLeft = UDim.new(0, 8)
+                btnPadding.PaddingRight = UDim.new(0, 8)
 
-                local sPad = Instance.new("UIPadding", subTabBtn)
-                sPad.PaddingLeft = UDim.new(0, 8)
-                sPad.PaddingRight = UDim.new(0, 8)
+                local btnStroke = Instance.new("UIStroke", subTabBtn)
+                btnStroke.Color = currentTheme.Stroke
+                btnStroke.Thickness = 1
 
-                local subPage = Instance.new("Frame", subPagesHolder)
+                local subPage = Instance.new("Frame", subTabPages)
                 subPage.Name = subTabName .. "Page"
                 subPage.Size = UDim2.new(1, 0, 0, 0)
                 subPage.AutomaticSize = Enum.AutomaticSize.Y
                 subPage.BackgroundTransparency = 1
                 subPage.Visible = false
 
-                local spPad = Instance.new("UIPadding", subPage)
-                spPad.PaddingLeft = UDim.new(0, 6)
-                spPad.PaddingRight = UDim.new(0, 6)
-                spPad.PaddingTop = UDim.new(0, 4)
-                spPad.PaddingBottom = UDim.new(0, 6)
+                local subPagePad = Instance.new("UIPadding", subPage)
+                subPagePad.PaddingLeft = UDim.new(0, 6)
+                subPagePad.PaddingRight = UDim.new(0, 6)
+                subPagePad.PaddingBottom = UDim.new(0, 6)
 
-                local spLayout = Instance.new("UIListLayout", subPage)
-                spLayout.SortOrder = Enum.SortOrder.LayoutOrder
-                spLayout.Padding = UDim.new(0, 6)
-
-                local subMethods = buatElementMethods(subPage)
+                local subPageLayout = Instance.new("UIListLayout", subPage)
+                subPageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                subPageLayout.Padding = UDim.new(0, 6)
 
                 subTabBtn.MouseButton1Click:Connect(function()
-                    if tabboxObj.CurrentSubTab and tabboxObj.CurrentSubTab.Index ~= subIndex then
-                        tabboxObj.CurrentSubTab.Button.BackgroundColor3 = currentTheme.ButtonBG
-                        tabboxObj.CurrentSubTab.Button.TextColor3 = Color3.fromRGB(180, 180, 180)
-                        tabboxObj.CurrentSubTab.Page.Visible = false
+                    for _, tabData in ipairs(subTabMethods.SubTabs) do
+                        tabData.Button.BackgroundColor3 = currentTheme.ButtonBG
+                        tabData.Button.TextColor3 = Color3.fromRGB(180, 180, 180)
+                        tabData.Page.Visible = false
                     end
-
                     subTabBtn.BackgroundColor3 = currentTheme.Accent
                     subTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
                     subPage.Visible = true
-
-                    tabboxObj.CurrentSubTab = {Button = subTabBtn, Page = subPage, Index = subIndex}
+                    subTabMethods.CurrentSubTab = subPage
                 end)
 
-                if subIndex == 1 then
+                if #subTabMethods.SubTabs == 0 then
                     subTabBtn.BackgroundColor3 = currentTheme.Accent
                     subTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
                     subPage.Visible = true
-                    tabboxObj.CurrentSubTab = {Button = subTabBtn, Page = subPage, Index = subIndex}
+                    subTabMethods.CurrentSubTab = subPage
                 end
 
-                table.insert(tabboxObj.SubTabs, {Button = subTabBtn, Page = subPage, Index = subIndex})
-                return subMethods
+                local tabData = {Button = subTabBtn, Page = subPage}
+                table.insert(subTabMethods.SubTabs, tabData)
+
+                return buatElementMethods(subPage)
             end
 
-            return tabboxObj
+            return subTabMethods
         end
 
         if tabIndex == 1 then
             button.BackgroundColor3 = currentTheme.Accent
             iconImg.ImageColor3 = Color3.fromRGB(255, 255, 255)
-            page.Position = UDim2.new(0, 0, 0, 0)
             page.Visible = true
             tabLabel.Text = tabName
             window.CurrentTab = {Page = page, Button = button, Icon = iconImg, Index = tabIndex}
         end
 
-        table.insert(window.Tabs, {Page = page, Button = button, Icon = iconImg, Index = tabIndex})
+        table.insert(window.Tabs, tabObj)
         return tabObj
     end
 
