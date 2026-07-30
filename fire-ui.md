@@ -113,8 +113,8 @@ Tab:AddDropdown({
 **paragraph**
 ```luau
 Tab:AddParagraph({
-    Title = "Peringatan Sistem",
-    Desc = "Berhati-hatilah saat mengubah pengaturan sensitif.",
+    Title = "this a paragraph",
+    Desc = "set this element as you like",
     Color = "Red"
 })
 ```
