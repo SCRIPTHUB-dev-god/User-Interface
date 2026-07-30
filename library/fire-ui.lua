@@ -36,6 +36,16 @@ local iconMap = {
     ["user"] = "rbxassetid://10747373176"
 }
 
+local function resolveIcon(iconValue, fallbackKey)
+    if type(iconValue) ~= "string" or iconValue == "" then
+        return iconMap[fallbackKey] or iconMap["code"]
+    end
+    if iconValue:match("^rbxassetid://") or iconValue:match("^rbxasset://") or iconValue:match("^http") then
+        return iconValue
+    end
+    return iconMap[iconValue] or iconMap[fallbackKey] or iconMap["code"]
+end
+
 local themes = {
     dark = {
         MainBG = Color3.fromRGB(24, 24, 26),
@@ -77,6 +87,7 @@ local themes = {
         MainBG = Color3.fromRGB(24, 22, 18),
         HeaderBG = Color3.fromRGB(16, 14, 12),
         Stroke = Color3.fromRGB(40, 35, 30),
+        ButtonBG = Color3.fromRGB(36, 30, 25),
         SectionBG = Color3.fromRGB(33, 28, 24),
         Accent = Color3.fromRGB(255, 215, 0),
         IconCl = Color3.fromRGB(255, 215, 0)
@@ -116,7 +127,7 @@ NotifContainer.BackgroundTransparency = 1
 local notifLayout = Instance.new("UIListLayout", NotifContainer)
 notifLayout.FillDirection = Enum.FillDirection.Vertical
 notifLayout.SortOrder = Enum.SortOrder.LayoutOrder
-notifLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+notifLayout.VerticalAlignment = Enum.VerticalAlignment.Top
 notifLayout.Padding = UDim.new(0, 8)
 
 function library:Notification(notifOptions)
@@ -199,6 +210,7 @@ function library:window(options)
     options = options or {}
     local windowTitle = options.title or "library ui"
     local windowDesc = options.desc or "Premium v1.0"
+    local windowIcon = resolveIcon(options.icon, "code")
     local bgTrans = options.transparent or 0
     local selectedTheme = options.theme or "dark"
     local currentTheme = themes[selectedTheme:lower()] or themes.dark
@@ -231,6 +243,17 @@ function library:window(options)
         window.ToggleKey = key
     end
 
+    local MainShadow = Instance.new("ImageLabel")
+    MainShadow.Name = "MainShadow"
+    MainShadow.BackgroundTransparency = 1
+    MainShadow.Image = "rbxassetid://6015897843"
+    MainShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    MainShadow.ImageTransparency = 0.35
+    MainShadow.ScaleType = Enum.ScaleType.Slice
+    MainShadow.SliceCenter = Rect.new(49, 49, 450, 450)
+    MainShadow.ZIndex = 0
+    MainShadow.Parent = ScreenGui
+
     local MainUI = Instance.new("CanvasGroup")
     MainUI.Name = "MainUI"
     MainUI.Size = UDim2.new(0, 560, 0, 360)
@@ -238,11 +261,33 @@ function library:window(options)
     MainUI.BackgroundColor3 = currentTheme.MainBG
     MainUI.BackgroundTransparency = bgTrans
     MainUI.BorderSizePixel = 0
+    MainUI.ZIndex = 1
     MainUI.Parent = ScreenGui
+
+    local function syncShadow()
+        MainShadow.AnchorPoint = MainUI.AnchorPoint
+        MainShadow.Position = MainUI.Position
+        MainShadow.Size = UDim2.new(MainUI.Size.X.Scale, MainUI.Size.X.Offset + 60, MainUI.Size.Y.Scale, MainUI.Size.Y.Offset + 60)
+        MainShadow.Visible = MainUI.Visible
+    end
+
+    syncShadow()
+    MainUI:GetPropertyChangedSignal("Position"):Connect(syncShadow)
+    MainUI:GetPropertyChangedSignal("Size"):Connect(syncShadow)
+    MainUI:GetPropertyChangedSignal("Visible"):Connect(syncShadow)
+    MainUI:GetPropertyChangedSignal("AnchorPoint"):Connect(syncShadow)
 
     local UIScale = Instance.new("UIScale")
     UIScale.Scale = 0.80
     UIScale.Parent = MainUI
+
+    local ShadowScale = Instance.new("UIScale")
+    ShadowScale.Scale = UIScale.Scale
+    ShadowScale.Parent = MainShadow
+
+    UIScale:GetPropertyChangedSignal("Scale"):Connect(function()
+        ShadowScale.Scale = UIScale.Scale
+    end)
 
     Instance.new("UICorner", MainUI).CornerRadius = UDim.new(0, 12)
     local MainStroke = Instance.new("UIStroke", MainUI)
@@ -311,10 +356,11 @@ function library:window(options)
 
     local Header = Instance.new("Frame", MainUI)
     Header.Name = "Header"
-    Header.Size = UDim2.new(1, 0, 0, 40)
+    Header.Size = UDim2.new(1, 0, 0, 52)
     Header.BackgroundColor3 = currentTheme.HeaderBG
     Header.BackgroundTransparency = bgTrans
     Header.BorderSizePixel = 0
+    Header.ClipsDescendants = true
 
     Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 12)
 
@@ -325,70 +371,76 @@ function library:window(options)
     Fix.BackgroundTransparency = bgTrans
     Fix.BorderSizePixel = 0
 
-    local profile = Instance.new("ImageLabel", Header)
-    profile.Name = "Profile"
-    profile.Size = UDim2.new(0, 28, 0, 28)
-    profile.Position = UDim2.new(0, 8, 0.5, -14)
-    profile.BackgroundColor3 = currentTheme.SectionBG
-    profile.BackgroundTransparency = bgTrans
-    profile.Image = "https://www.roblox.com/headshot-thumbnail/image?userId="..LocalPlayer.UserId.."&width=420&height=420&format=png"
-    profile.BorderSizePixel = 0
-    Instance.new("UICorner", profile).CornerRadius = UDim.new(1,0)
-    local profileStroke = Instance.new("UIStroke", profile)
-    profileStroke.Color = currentTheme.Stroke
-    profileStroke.Thickness = 1
+    local headerIcon = Instance.new("ImageLabel", Header)
+    headerIcon.Name = "HeaderIcon"
+    headerIcon.Size = UDim2.new(0, 30, 0, 30)
+    headerIcon.Position = UDim2.new(0, 10, 0.5, -15)
+    headerIcon.BackgroundColor3 = currentTheme.SectionBG
+    headerIcon.BackgroundTransparency = bgTrans
+    headerIcon.Image = windowIcon
+    headerIcon.ImageColor3 = currentTheme.IconCl
+    headerIcon.BorderSizePixel = 0
+    Instance.new("UICorner", headerIcon).CornerRadius = UDim.new(0, 8)
+    local headerIconStroke = Instance.new("UIStroke", headerIcon)
+    headerIconStroke.Color = currentTheme.Stroke
+    headerIconStroke.Thickness = 1
 
-    local nameLabel = Instance.new("TextLabel", Header)
-    nameLabel.Name = "PlayerDisplayName"
-    nameLabel.Size = UDim2.new(0, 80, 0, 28)
-    nameLabel.Position = UDim2.new(0, 42, 0.5, -14)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Text = LocalPlayer.DisplayName
-    nameLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-    nameLabel.Font = Enum.Font.GothamMedium
-    nameLabel.TextSize = 11
-    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    local headerTitle = Instance.new("TextLabel", Header)
+    headerTitle.Name = "HeaderTitle"
+    headerTitle.Size = UDim2.new(0, 106, 0, 18)
+    headerTitle.Position = UDim2.new(0, 48, 0, 8)
+    headerTitle.BackgroundTransparency = 1
+    headerTitle.Text = windowTitle
+    headerTitle.TextColor3 = Color3.new(1, 1, 1)
+    headerTitle.Font = Enum.Font.GothamBold
+    headerTitle.TextSize = 13
+    headerTitle.TextXAlignment = Enum.TextXAlignment.Left
+    headerTitle.ClipsDescendants = false
+    headerTitle.TextScaled = true
+
+    local headerTitleConstraint = Instance.new("UITextSizeConstraint", headerTitle)
+    headerTitleConstraint.MaxTextSize = 13
+
+    local headerDesc = Instance.new("TextLabel", Header)
+    headerDesc.Name = "HeaderDesc"
+    headerDesc.Size = UDim2.new(0, 106, 0, 14)
+    headerDesc.Position = UDim2.new(0, 48, 0, 27)
+    headerDesc.BackgroundTransparency = 1
+    headerDesc.Text = windowDesc
+    headerDesc.TextColor3 = Color3.fromRGB(150, 150, 150)
+    headerDesc.Font = Enum.Font.Gotham
+    headerDesc.TextSize = 11
+    headerDesc.TextXAlignment = Enum.TextXAlignment.Left
+    headerDesc.ClipsDescendants = false
+    headerDesc.TextScaled = true
+
+    local headerDescConstraint = Instance.new("UITextSizeConstraint", headerDesc)
+    headerDescConstraint.MaxTextSize = 11
 
     local tabLabel = Instance.new("TextLabel", Header)
     tabLabel.Name = "ActiveTabLabel"
-    tabLabel.Size = UDim2.new(0, 72, 0, 28)
-    tabLabel.Position = UDim2.new(0, 135, 0.5, -14)
+    tabLabel.Size = UDim2.new(0, 100, 0, 32)
+    tabLabel.Position = UDim2.new(0, 170, 0.5, -16)
     tabLabel.BackgroundTransparency = 1
     tabLabel.Text = ""
     tabLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     tabLabel.Font = Enum.Font.GothamBold
-    tabLabel.TextSize = 14
+    tabLabel.TextSize = 15
     tabLabel.TextXAlignment = Enum.TextXAlignment.Left
     tabLabel.ClipsDescendants = false
     tabLabel.TextScaled = true
-    
-    local tabLabelConstraint = Instance.new("UITextSizeConstraint", tabLabel)
-    tabLabelConstraint.MaxTextSize = 14
 
-    local vLine = Instance.new("Frame", Header)
-    vLine.Name = "ProfileLine"
-    vLine.Size = UDim2.new(0, 1, 1, -3)
-    vLine.Position = UDim2.new(0, 210, 0, 2)
-    vLine.BackgroundColor3 = currentTheme.Stroke
-    vLine.BorderSizePixel = 0
-    vLine.ZIndex = 5
+    local tabLabelConstraint = Instance.new("UITextSizeConstraint", tabLabel)
+    tabLabelConstraint.MaxTextSize = 15
 
     local VLine = Instance.new("Frame", Header)
     VLine.Name = "ProfileLine"
-    VLine.Size = UDim2.new(0, 1, 1, -3)
-    VLine.Position = UDim2.new(0, 130, 0, 2)
+    VLine.Size = UDim2.new(0, 1, 0, 32)
+    VLine.Position = UDim2.new(0, 160, 0.5, -16)
     VLine.BackgroundColor3 = currentTheme.Stroke
     VLine.BorderSizePixel = 0
     VLine.ZIndex = 5
-    
-    local xLine = Instance.new("Frame", Header)
-    xLine.Name = "ProfileLine"
-    xLine.Size = UDim2.new(0, 1, 1, -3)
-    xLine.Position = UDim2.new(0, 375, 0, 2)
-    xLine.BackgroundTransparency = 1
-    xLine.BorderSizePixel = 0
-    xLine.ZIndex = 5
-    
+
     local headerStroke = Instance.new("Frame", Header)
     headerStroke.Name = "HeaderStroke"
     headerStroke.Size = UDim2.new(1, 0, 0, 1)
@@ -400,7 +452,7 @@ function library:window(options)
     local TagContainer = Instance.new("ScrollingFrame", Header)
     TagContainer.Name = "TagContainer"
     TagContainer.Size = UDim2.new(0, 155, 0, 24)
-    TagContainer.Position = UDim2.new(0, 215, 0.5, -12)
+    TagContainer.Position = UDim2.new(0, 275, 0.5, -12)
     TagContainer.BackgroundTransparency = 1
     TagContainer.BorderSizePixel = 0
     TagContainer.ScrollBarThickness = 0
@@ -417,58 +469,22 @@ function library:window(options)
 
     local LeftTabBar = Instance.new("Frame", MainUI)
     LeftTabBar.Name = "LeftTabBar"
-    LeftTabBar.Size = UDim2.new(0, 1, 1, -40)
-    LeftTabBar.Position = UDim2.new(0, 90, 0, 40)
+    LeftTabBar.Size = UDim2.new(0, 1, 1, -52)
+    LeftTabBar.Position = UDim2.new(0, 84, 0, 52)
     LeftTabBar.BackgroundColor3 = currentTheme.Stroke
     LeftTabBar.BorderSizePixel = 0
     LeftTabBar.ZIndex = 5
 
     local Sidebar = Instance.new("Frame", MainUI)
     Sidebar.Name = "Sidebar"
-    Sidebar.Size = UDim2.new(0, 90, 1, -40)
-    Sidebar.Position = UDim2.new(0, 0, 0, 40)
+    Sidebar.Size = UDim2.new(0, 84, 1, -52)
+    Sidebar.Position = UDim2.new(0, 0, 0, 52)
     Sidebar.BackgroundTransparency = 1
-
-    local sideTitle = Instance.new("TextLabel", Sidebar)
-    sideTitle.Name = "SideTitle"
-    sideTitle.Size = UDim2.new(1, -12, 0, 20)
-    sideTitle.Position = UDim2.new(0, 6, 0, 5)
-    sideTitle.BackgroundTransparency = 1
-    sideTitle.Text = windowTitle
-    sideTitle.TextColor3 = Color3.new(1,1,1)
-    sideTitle.Font = Enum.Font.GothamBold
-    sideTitle.TextSize = 16
-    sideTitle.TextXAlignment = Enum.TextXAlignment.Left
-    sideTitle.TextScaled = true
-    local sideTitleConstraint = Instance.new("UITextSizeConstraint", sideTitle)
-    sideTitleConstraint.MaxTextSize = 16
-
-    local sideDesc = Instance.new("TextLabel", Sidebar)
-    sideDesc.Name = "SideDesc"
-    sideDesc.Size = UDim2.new(1, -12, 0, 16)
-    sideDesc.Position = UDim2.new(0, 6, 0, 24)
-    sideDesc.BackgroundTransparency = 1
-    sideDesc.Text = windowDesc
-    sideDesc.TextColor3 = Color3.fromRGB(150,150,150)
-    sideDesc.Font = Enum.Font.Gotham
-    sideDesc.TextSize = 12
-    sideDesc.TextXAlignment = Enum.TextXAlignment.Left
-    sideDesc.TextScaled = true
-    local sideDescConstraint = Instance.new("UITextSizeConstraint", sideDesc)
-    sideDescConstraint.MaxTextSize = 12
-
-    local sideLine = Instance.new("Frame", Sidebar)
-    sideLine.Name = "SideLine"
-    sideLine.Size = UDim2.new(1, 0, 0, 1)
-    sideLine.Position = UDim2.new(0, 0, 0, 44)
-    sideLine.BackgroundColor3 = currentTheme.Stroke
-    sideLine.BorderSizePixel = 0
-    sideLine.ZIndex = 5
 
     local SidebarScroll = Instance.new("ScrollingFrame", Sidebar)
     SidebarScroll.Name = "SidebarScroll"
-    SidebarScroll.Size = UDim2.new(1, 0, 1, -48)
-    SidebarScroll.Position = UDim2.new(0, 0, 0, 48)
+    SidebarScroll.Size = UDim2.new(1, 0, 1, 0)
+    SidebarScroll.Position = UDim2.new(0, 0, 0, 0)
     SidebarScroll.BackgroundTransparency = 1
     SidebarScroll.BorderSizePixel = 0
     SidebarScroll.ScrollBarThickness = 0
@@ -480,19 +496,82 @@ function library:window(options)
     sidebarLayout.Padding = UDim.new(0, 6)
     sidebarLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
-    function window:AddDivider()
-        local line = Instance.new("Frame", SidebarScroll)
-        line.Size = UDim2.new(1, -12, 0, 3)
+    local sidebarTopPad = Instance.new("UIPadding", SidebarScroll)
+    sidebarTopPad.PaddingTop = UDim.new(0, 6)
+
+    local function buatFadeLine(parent, sizeX)
+        local line = Instance.new("Frame", parent)
+        line.Size = UDim2.new(0, sizeX, 0, 3)
         line.BackgroundColor3 = currentTheme.Stroke
         line.BorderSizePixel = 0
         local corner = Instance.new("UICorner", line)
         corner.CornerRadius = UDim.new(1, 0)
+        local gradient = Instance.new("UIGradient", line)
+        gradient.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.55),
+            NumberSequenceKeypoint.new(0.5, 0),
+            NumberSequenceKeypoint.new(1, 0.55)
+        })
+        return line
+    end
+
+    function window:AddDivider(title)
+        local holder = Instance.new("Frame", SidebarScroll)
+        holder.BackgroundTransparency = 1
+        holder.Size = UDim2.new(1, -12, 0, 14)
+
+        if not title then
+            local line = buatFadeLine(holder, 0)
+            line.Size = UDim2.new(1, 0, 0, 3)
+            line.Position = UDim2.new(0, 0, 0.5, -1)
+            return
+        end
+
+        local layout = Instance.new("UIListLayout", holder)
+        layout.FillDirection = Enum.FillDirection.Horizontal
+        layout.SortOrder = Enum.SortOrder.LayoutOrder
+        layout.VerticalAlignment = Enum.VerticalAlignment.Center
+        layout.Padding = UDim.new(0, 4)
+
+        local leftLine = Instance.new("Frame", holder)
+        leftLine.Size = UDim2.new(0.5, -4, 0, 3)
+        leftLine.BackgroundColor3 = currentTheme.Stroke
+        leftLine.BorderSizePixel = 0
+        leftLine.LayoutOrder = 1
+        Instance.new("UICorner", leftLine).CornerRadius = UDim.new(1, 0)
+        local leftGradient = Instance.new("UIGradient", leftLine)
+        leftGradient.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.55),
+            NumberSequenceKeypoint.new(1, 0)
+        })
+
+        local label = Instance.new("TextLabel", holder)
+        label.Size = UDim2.new(0, 0, 0, 12)
+        label.AutomaticSize = Enum.AutomaticSize.X
+        label.BackgroundTransparency = 1
+        label.Text = title
+        label.TextColor3 = Color3.fromRGB(150, 150, 150)
+        label.Font = Enum.Font.GothamBold
+        label.TextSize = 8
+        label.LayoutOrder = 2
+
+        local rightLine = Instance.new("Frame", holder)
+        rightLine.Size = UDim2.new(0.5, -4, 0, 3)
+        rightLine.BackgroundColor3 = currentTheme.Stroke
+        rightLine.BorderSizePixel = 0
+        rightLine.LayoutOrder = 3
+        Instance.new("UICorner", rightLine).CornerRadius = UDim.new(1, 0)
+        local rightGradient = Instance.new("UIGradient", rightLine)
+        rightGradient.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0),
+            NumberSequenceKeypoint.new(1, 0.55)
+        })
     end
 
     local ContentHolder = Instance.new("Frame", MainUI)
     ContentHolder.Name = "ContentHolder"
-    ContentHolder.Size = UDim2.new(1, -91, 1, -40)
-    ContentHolder.Position = UDim2.new(0, 91, 0, 40)
+    ContentHolder.Size = UDim2.new(1, -85, 1, -52)
+    ContentHolder.Position = UDim2.new(0, 85, 0, 52)
     ContentHolder.BackgroundTransparency = 1
     ContentHolder.ClipsDescendants = true
 
@@ -724,24 +803,33 @@ function library:window(options)
         DestroyDialog.Visible = true
     end)
 
-    local function buatButton(nama, iconName)
+    local function buatButton(nama, iconValue)
         local btn = Instance.new("ImageButton")
         btn.Name = nama
-        btn.Size = UDim2.new(0, 45, 0, 45)
+        btn.Size = UDim2.new(0, 50, 0, 50)
         btn.BackgroundColor3 = currentTheme.ButtonBG
         btn.BackgroundTransparency = bgTrans
-        btn.Image = iconMap[iconName] or iconMap["code"]
-        btn.ImageColor3 = currentTheme.IconCl
         btn.AutoButtonColor = false
         btn.ZIndex = 6
         btn.Parent = SidebarScroll
-        
+
         local corner = Instance.new("UICorner", btn)
-        corner.CornerRadius = UDim.new(0, 8)
+        corner.CornerRadius = UDim.new(0, 10)
         local stroke = Instance.new("UIStroke", btn)
         stroke.Color = currentTheme.Stroke
         stroke.Thickness = 1
-        return btn
+
+        local iconImg = Instance.new("ImageLabel", btn)
+        iconImg.Name = "Icon"
+        iconImg.Size = UDim2.new(0, 26, 0, 26)
+        iconImg.AnchorPoint = Vector2.new(0.5, 0.5)
+        iconImg.Position = UDim2.new(0.5, 0, 0.5, 0)
+        iconImg.BackgroundTransparency = 1
+        iconImg.Image = resolveIcon(iconValue, "code")
+        iconImg.ImageColor3 = currentTheme.IconCl
+        iconImg.ZIndex = 6
+
+        return btn, iconImg
     end
 
     function window:AddTag(tagOptions)
@@ -753,9 +841,6 @@ function library:window(options)
         local tagIcon = tagOptions.icon
 
         totalTags = totalTags + 1
-        if totalTags > 0 then
-            xLine.BackgroundTransparency = 0
-        end
 
         local tagBtn = Instance.new("TextButton", TagContainer)
         tagBtn.Name = tagTitle .. "Tag"
@@ -765,11 +850,11 @@ function library:window(options)
         tagBtn.BackgroundTransparency = bgTrans
         tagBtn.Text = ""
 
-        local tagLayout = Instance.new("UIListLayout", tagBtn)
-        tagLayout.FillDirection = Enum.FillDirection.Horizontal
-        tagLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        tagLayout.Padding = UDim.new(0, 4)
-        tagLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+        local tagLayoutItem = Instance.new("UIListLayout", tagBtn)
+        tagLayoutItem.FillDirection = Enum.FillDirection.Horizontal
+        tagLayoutItem.SortOrder = Enum.SortOrder.LayoutOrder
+        tagLayoutItem.Padding = UDim.new(0, 4)
+        tagLayoutItem.VerticalAlignment = Enum.VerticalAlignment.Center
 
         local tagPadding = Instance.new("UIPadding", tagBtn)
         tagPadding.PaddingLeft = UDim.new(0, 8)
@@ -782,12 +867,12 @@ function library:window(options)
         tagStroke.Color = currentTheme.Stroke
         tagStroke.Thickness = 1
 
-        if tagIcon and iconMap[tagIcon] then
+        if tagIcon then
             local iconImg = Instance.new("ImageLabel", tagBtn)
             iconImg.Name = "TagIcon"
             iconImg.Size = UDim2.new(0, 12, 0, 12)
             iconImg.BackgroundTransparency = 1
-            iconImg.Image = iconMap[tagIcon]
+            iconImg.Image = resolveIcon(tagIcon, "code")
             iconImg.ImageColor3 = Color3.fromRGB(255, 255, 255)
             iconImg.LayoutOrder = 1
         end
@@ -814,16 +899,78 @@ function library:window(options)
         return tagBtn
     end
 
+    function window:togglegui(tglOptions)
+        tglOptions = tglOptions or {}
+        local tglTitle = tglOptions.title or windowTitle
+        local tglIcon = resolveIcon(tglOptions.icon, "code")
+
+        toggleLabel.Text = tglTitle
+        dragIcon.Image = tglIcon
+    end
+
     local function buatElementMethods(containerFrame)
         local methods = {}
 
-        function methods:AddDivider()
-            local line = Instance.new("Frame", containerFrame)
-            line.Size = UDim2.new(1, 0, 0, 3)
-            line.BackgroundColor3 = currentTheme.Stroke
-            line.BorderSizePixel = 0
-            local corner = Instance.new("UICorner", line)
-            corner.CornerRadius = UDim.new(1, 0)
+        function methods:AddDivider(title)
+            local holder = Instance.new("Frame", containerFrame)
+            holder.BackgroundTransparency = 1
+            holder.Size = UDim2.new(1, 0, 0, 16)
+
+            if not title then
+                local line = Instance.new("Frame", holder)
+                line.Size = UDim2.new(1, 0, 0, 3)
+                line.Position = UDim2.new(0, 0, 0.5, -1)
+                line.BackgroundColor3 = currentTheme.Stroke
+                line.BorderSizePixel = 0
+                Instance.new("UICorner", line).CornerRadius = UDim.new(1, 0)
+                local gradient = Instance.new("UIGradient", line)
+                gradient.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.55),
+                    NumberSequenceKeypoint.new(0.5, 0),
+                    NumberSequenceKeypoint.new(1, 0.55)
+                })
+                return
+            end
+
+            local layout = Instance.new("UIListLayout", holder)
+            layout.FillDirection = Enum.FillDirection.Horizontal
+            layout.SortOrder = Enum.SortOrder.LayoutOrder
+            layout.VerticalAlignment = Enum.VerticalAlignment.Center
+            layout.Padding = UDim.new(0, 6)
+
+            local leftLine = Instance.new("Frame", holder)
+            leftLine.Size = UDim2.new(0.5, -6, 0, 3)
+            leftLine.BackgroundColor3 = currentTheme.Stroke
+            leftLine.BorderSizePixel = 0
+            leftLine.LayoutOrder = 1
+            Instance.new("UICorner", leftLine).CornerRadius = UDim.new(1, 0)
+            local leftGradient = Instance.new("UIGradient", leftLine)
+            leftGradient.Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.55),
+                NumberSequenceKeypoint.new(1, 0)
+            })
+
+            local label = Instance.new("TextLabel", holder)
+            label.Size = UDim2.new(0, 0, 0, 14)
+            label.AutomaticSize = Enum.AutomaticSize.X
+            label.BackgroundTransparency = 1
+            label.Text = title
+            label.TextColor3 = Color3.fromRGB(160, 160, 160)
+            label.Font = Enum.Font.GothamBold
+            label.TextSize = 10
+            label.LayoutOrder = 2
+
+            local rightLine = Instance.new("Frame", holder)
+            rightLine.Size = UDim2.new(0.5, -6, 0, 3)
+            rightLine.BackgroundColor3 = currentTheme.Stroke
+            rightLine.BorderSizePixel = 0
+            rightLine.LayoutOrder = 3
+            Instance.new("UICorner", rightLine).CornerRadius = UDim.new(1, 0)
+            local rightGradient = Instance.new("UIGradient", rightLine)
+            rightGradient.Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0),
+                NumberSequenceKeypoint.new(1, 0.55)
+            })
         end
 
         function methods:Addbutton(btnOptions)
@@ -1001,7 +1148,7 @@ function library:window(options)
                 searchContainer.Size = UDim2.new(1, 0, 0, 30)
                 searchContainer.BackgroundTransparency = 1
                 searchContainer.LayoutOrder = 0
-                
+
                 searchBox = Instance.new("TextBox", searchContainer)
                 searchBox.Size = UDim2.new(1, -16, 0, 24)
                 searchBox.Position = UDim2.new(0, 8, 0.5, -12)
@@ -1031,6 +1178,14 @@ function library:window(options)
                 end
             end
 
+            local function refreshOptionVisuals()
+                for _, item in ipairs(optionButtons) do
+                    local isSelected = table.find(selected, item.Value) ~= nil
+                    item.Button.BackgroundColor3 = isSelected and currentTheme.SectionBG or currentTheme.ButtonBG
+                    item.Button.TextColor3 = isSelected and currentTheme.Accent or Color3.fromRGB(200, 200, 200)
+                end
+            end
+
             for i, val in ipairs(list) do
                 local opt = Instance.new("TextButton", dropList)
                 opt.Size = UDim2.new(1, 0, 0, 28)
@@ -1051,27 +1206,16 @@ function library:window(options)
                         local found = table.find(selected, val)
                         if found then
                             table.remove(selected, found)
-                            opt.BackgroundColor3 = currentTheme.ButtonBG
-                            opt.TextColor3 = Color3.fromRGB(200, 200, 200)
                         else
                             table.insert(selected, val)
-                            opt.BackgroundColor3 = currentTheme.SectionBG
-                            opt.TextColor3 = currentTheme.Accent
                         end
                     else
                         selected = {val}
-                        for _, child in ipairs(dropList:GetChildren()) do
-                            if child:IsA("TextButton") then
-                                child.BackgroundColor3 = currentTheme.ButtonBG
-                                child.TextColor3 = Color3.fromRGB(200, 200, 200)
-                            end
-                        end
-                        opt.BackgroundColor3 = currentTheme.SectionBG
-                        opt.TextColor3 = currentTheme.Accent
                         expanded = false
                         TweenService:Create(ddFrame, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 36)}):Play()
                         arrow.Text = "v"
                     end
+                    refreshOptionVisuals()
                     refreshSelected()
                 end)
             end
@@ -1110,9 +1254,6 @@ function library:window(options)
                 TweenService:Create(ddFrame, TweenInfo.new(0.2), {Size = targetSize}):Play()
                 arrow.Text = expanded and "^" or "v"
             end)
-
-            local dropdownMethods = {}
-            return dropdownMethods
         end
 
         function methods:AddSlider(sldOptions)
@@ -1177,18 +1318,20 @@ function library:window(options)
 
             local sliding = false
 
+            local function applyValue(newVal)
+                currentVal = math.clamp(math.round(newVal / step) * step, min, max)
+                fill.Size = UDim2.new((currentVal - min) / (max - min), 0, 1, 0)
+                valLabel.Text = tostring(currentVal)
+                callback(currentVal)
+            end
+
             local function updateSlider(input)
                 local currentX = input.Position.X
                 local startX = lane.AbsolutePosition.X
                 local width = lane.AbsoluteSize.X
                 local ratio = math.clamp((currentX - startX) / width, 0, 1)
                 local exactVal = min + (ratio * (max - min))
-                currentVal = math.round(exactVal / step) * step
-                currentVal = math.clamp(currentVal, min, max)
-
-                fill.Size = UDim2.new((currentVal - min) / (max - min), 0, 1, 0)
-                valLabel.Text = tostring(currentVal)
-                callback(currentVal)
+                applyValue(exactVal)
             end
 
             sliderBtn.InputBegan:Connect(function(input)
@@ -1213,17 +1356,13 @@ function library:window(options)
             valLabel.FocusLost:Connect(function()
                 local inputNum = tonumber(valLabel.Text)
                 if inputNum then
-                    currentVal = math.round(inputNum / step) * step
-                    currentVal = math.clamp(currentVal, min, max)
+                    applyValue(inputNum)
+                else
+                    valLabel.Text = tostring(currentVal)
                 end
-                fill.Size = UDim2.new((currentVal - min) / (max - min), 0, 1, 0)
-                valLabel.Text = tostring(currentVal)
-                callback(currentVal)
             end)
 
             callback(default)
-            local sliderMethods = {}
-            return sliderMethods
         end
 
         function methods:AddParagraph(pOptions)
@@ -1333,9 +1472,6 @@ function library:window(options)
                     end
                 end
             end)
-
-            local keybindMethods = {}
-            return keybindMethods
         end
 
         function methods:AddInput(inpOptions)
@@ -1443,7 +1579,7 @@ function library:window(options)
             local sfLayout = Instance.new("UIListLayout", slidersFrame)
             sfLayout.SortOrder = Enum.SortOrder.LayoutOrder
             sfLayout.Padding = UDim.new(0, 4)
-            
+
             local sfPad = Instance.new("UIPadding", slidersFrame)
             sfPad.PaddingLeft = UDim.new(0, 8)
             sfPad.PaddingRight = UDim.new(0, 8)
@@ -1535,9 +1671,6 @@ function library:window(options)
                 local targetSize = expanded and UDim2.new(1, 0, 0, 146) or UDim2.new(1, 0, 0, 36)
                 TweenService:Create(cpFrame, TweenInfo.new(0.2), {Size = targetSize}):Play()
             end)
-
-            local cpMethods = {}
-            return cpMethods
         end
 
         return methods
@@ -1545,207 +1678,210 @@ function library:window(options)
 
     function window:AddTab(tabName, iconName)
         local tabIndex = #self.Tabs + 1
-        local button = buatButton(tabName.."Btn", iconName or "code")
+        local button, iconImg = buatButton(tabName.."Btn", iconName or "code")
 
-        local page = Instance.new("Frame", ContentHolder)  
-        page.Name = tabName  
-        page.Size = UDim2.new(1, 0, 1, 0)  
-        page.BackgroundTransparency = 1  
-        page.Visible = false  
+        local page = Instance.new("Frame", ContentHolder)
+        page.Name = tabName
+        page.Size = UDim2.new(1, 0, 1, 0)
+        page.BackgroundTransparency = 1
+        page.Visible = false
         page.ClipsDescendants = true
-          
-        local pad = Instance.new("UIPadding", page)  
-        pad.PaddingLeft = UDim.new(0,10)  
-        pad.PaddingTop = UDim.new(0,10)  
-        pad.PaddingRight = UDim.new(0,10)  
-        pad.PaddingBottom = UDim.new(0,10)  
 
-        local frame = Instance.new("Frame", page)  
-        frame.Name = "Card"  
-        frame.Size = UDim2.new(1, 0, 1, 0)  
-        frame.BackgroundColor3 = currentTheme.MainBG  
+        local pad = Instance.new("UIPadding", page)
+        pad.PaddingLeft = UDim.new(0, 10)
+        pad.PaddingTop = UDim.new(0, 10)
+        pad.PaddingRight = UDim.new(0, 10)
+        pad.PaddingBottom = UDim.new(0, 10)
+
+        local frame = Instance.new("Frame", page)
+        frame.Name = "Card"
+        frame.Size = UDim2.new(1, 0, 1, 0)
+        frame.BackgroundColor3 = currentTheme.MainBG
         frame.BackgroundTransparency = bgTrans
-        frame.BorderSizePixel = 0  
-        Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)  
-        local fstroke = Instance.new("UIStroke", frame)  
-        fstroke.Color = currentTheme.Stroke  
-        fstroke.Thickness = 2.5  
+        frame.BorderSizePixel = 0
+        Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+        local fstroke = Instance.new("UIStroke", frame)
+        fstroke.Color = currentTheme.Stroke
+        fstroke.Thickness = 2.5
 
-        local scroll = Instance.new("ScrollingFrame", frame)  
-        scroll.Name = "Scroll"  
-        scroll.Size = UDim2.new(1, -24, 1, -24)  
-        scroll.Position = UDim2.new(0, 12, 0, 12)  
-        scroll.BackgroundTransparency = 1  
-        scroll.BorderSizePixel = 0  
-        scroll.ScrollBarThickness = 3  
-        scroll.CanvasSize = UDim2.new(0,0,0,0)  
-        scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y  
+        local scroll = Instance.new("ScrollingFrame", frame)
+        scroll.Name = "Scroll"
+        scroll.Size = UDim2.new(1, -24, 1, -24)
+        scroll.Position = UDim2.new(0, 12, 0, 12)
+        scroll.BackgroundTransparency = 1
+        scroll.BorderSizePixel = 0
+        scroll.ScrollBarThickness = 3
+        scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+        scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
         local sPad = Instance.new("UIPadding", scroll)
         sPad.PaddingLeft = UDim.new(0, 6)
         sPad.PaddingRight = UDim.new(0, 6)
         sPad.PaddingTop = UDim.new(0, 6)
-        sPad.PaddingBottom = UDim.new(0, 6)
-          
-        local hlayout = Instance.new("UIListLayout", scroll)  
+        sPad.PaddingBottom = UDim.new(0, 16 / UIScale.Scale)
+
+        UIScale:GetPropertyChangedSignal("Scale"):Connect(function()
+            sPad.PaddingBottom = UDim.new(0, 16 / UIScale.Scale)
+        end)
+
+        local hlayout = Instance.new("UIListLayout", scroll)
         hlayout.FillDirection = Enum.FillDirection.Vertical
-        hlayout.Padding = UDim.new(0, 6)  
-        hlayout.SortOrder = Enum.SortOrder.LayoutOrder  
-          
-        button.MouseButton1Click:Connect(function()  
+        hlayout.Padding = UDim.new(0, 6)
+        hlayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+        button.MouseButton1Click:Connect(function()
             if window.CurrentTab and window.CurrentTab.Index ~= tabIndex then
                 local oldTab = window.CurrentTab
-                
-                oldTab.Button.BackgroundColor3 = currentTheme.ButtonBG  
-                oldTab.Button.ImageColor3 = currentTheme.IconCl
+
+                oldTab.Button.BackgroundColor3 = currentTheme.ButtonBG
+                oldTab.Icon.ImageColor3 = currentTheme.IconCl
                 oldTab.Page.Visible = false
-                
-                button.BackgroundColor3 = currentTheme.Accent  
-                button.ImageColor3 = Color3.fromRGB(255, 255, 255)  
-                
+
+                button.BackgroundColor3 = currentTheme.Accent
+                iconImg.ImageColor3 = Color3.fromRGB(255, 255, 255)
+
                 page.Position = UDim2.new(0, 0, 0, 0)
                 page.Visible = true
-                
+
                 tabLabel.Text = tabName
-                tabLabel.Position = UDim2.new(0, 135, 0.5, -14)
                 tabLabel.TextTransparency = 0
 
-                window.CurrentTab = {Page = page, Button = button, Index = tabIndex}
+                window.CurrentTab = {Page = page, Button = button, Icon = iconImg, Index = tabIndex}
             end
-        end)  
-         
+        end)
+
         local tabObj = buatElementMethods(scroll)
-        
-        function tabObj:AddSection(sectionOptions)
-            sectionOptions = sectionOptions or {}
-            local sectionTitle = sectionOptions.title or "Section"
-            local sectionIcon = sectionOptions.icon
-            local isOpen = sectionOptions.open ~= false
 
-            local sectionBox = Instance.new("Frame", scroll)
-            sectionBox.Name = sectionTitle .. "Sec"
-            sectionBox.BackgroundColor3 = currentTheme.SectionBG
-            sectionBox.BackgroundTransparency = bgTrans
-            sectionBox.BorderSizePixel = 0
-            sectionBox.ClipsDescendants = true
+        function tabObj:AddTabbox()
+            local tabboxBox = Instance.new("Frame", scroll)
+            tabboxBox.Name = "Tabbox"
+            tabboxBox.BackgroundColor3 = currentTheme.SectionBG
+            tabboxBox.BackgroundTransparency = bgTrans
+            tabboxBox.BorderSizePixel = 0
+            tabboxBox.ClipsDescendants = true
+            tabboxBox.Size = UDim2.new(1, 0, 0, 0)
+            tabboxBox.AutomaticSize = Enum.AutomaticSize.Y
 
-            Instance.new("UICorner", sectionBox).CornerRadius = UDim.new(0, 6)
-            local sectionStroke = Instance.new("UIStroke", sectionBox)
-            sectionStroke.Color = currentTheme.Stroke
-            sectionStroke.Thickness = 1
+            Instance.new("UICorner", tabboxBox).CornerRadius = UDim.new(0, 6)
+            local tabboxStroke = Instance.new("UIStroke", tabboxBox)
+            tabboxStroke.Color = currentTheme.Stroke
+            tabboxStroke.Thickness = 1
 
-            local sectionLayout = Instance.new("UIListLayout", sectionBox)
-            sectionLayout.Padding = UDim.new(0, 0)
-            sectionLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            local boxLayout = Instance.new("UIListLayout", tabboxBox)
+            boxLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-            local topBar = Instance.new("Frame", sectionBox)
-            topBar.Name = "TopBar"
-            topBar.Size = UDim2.new(1, 0, 0, 26)
-            topBar.BackgroundTransparency = 1
+            local subTabBar = Instance.new("Frame", tabboxBox)
+            subTabBar.Name = "SubTabBar"
+            subTabBar.Size = UDim2.new(1, 0, 0, 0)
+            subTabBar.AutomaticSize = Enum.AutomaticSize.Y
+            subTabBar.BackgroundTransparency = 1
+            subTabBar.LayoutOrder = 1
 
-            local topPad = Instance.new("UIPadding", topBar)
-            topPad.PaddingLeft = UDim.new(0, 8)
-            topPad.PaddingRight = UDim.new(0, 8)
+            local subTabPad = Instance.new("UIPadding", subTabBar)
+            subTabPad.PaddingLeft = UDim.new(0, 6)
+            subTabPad.PaddingRight = UDim.new(0, 6)
+            subTabPad.PaddingTop = UDim.new(0, 6)
+            subTabPad.PaddingBottom = UDim.new(0, 6)
 
-            local hasIcon = sectionIcon and iconMap[sectionIcon]
-            if hasIcon then
-                local sIcon = Instance.new("ImageLabel", topBar)
-                sIcon.Name = "SectionIcon"
-                sIcon.Size = UDim2.new(0, 14, 0, 14)
-                sIcon.Position = UDim2.new(0, 0, 0.5, -7)
-                sIcon.BackgroundTransparency = 1
-                sIcon.Image = iconMap[sectionIcon]
-                sIcon.ImageColor3 = currentTheme.IconCl
-                sIcon.ZIndex = 6
-            end
+            local subTabLayout = Instance.new("UIListLayout", subTabBar)
+            subTabLayout.FillDirection = Enum.FillDirection.Horizontal
+            subTabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            subTabLayout.Padding = UDim.new(0, 6)
 
-            local titleLabel = Instance.new("TextLabel", topBar)
-            titleLabel.Size = UDim2.new(0.7, hasIcon and -18 or 0, 1, 0)
-            titleLabel.Position = hasIcon and UDim2.new(0, 18, 0, 0) or UDim2.new(0, 0, 0, 0)
-            titleLabel.BackgroundTransparency = 1
-            titleLabel.Text = sectionTitle
-            titleLabel.TextColor3 = Color3.fromRGB(230, 230, 230)
-            titleLabel.Font = Enum.Font.GothamBold
-            titleLabel.TextSize = 11
-            titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+            local subPagesHolder = Instance.new("Frame", tabboxBox)
+            subPagesHolder.Name = "SubPagesHolder"
+            subPagesHolder.Size = UDim2.new(1, 0, 0, 0)
+            subPagesHolder.AutomaticSize = Enum.AutomaticSize.Y
+            subPagesHolder.BackgroundTransparency = 1
+            subPagesHolder.LayoutOrder = 2
 
-            local toggleBtn = Instance.new("ImageButton", topBar)
-            toggleBtn.Size = UDim2.new(0, 16, 0, 16)
-            toggleBtn.Position = UDim2.new(1, -16, 0.5, -8)
-            toggleBtn.BackgroundTransparency = 1
-            toggleBtn.Image = isOpen and "rbxassetid://10709791523" or "rbxassetid://10709790948"
-            toggleBtn.ImageColor3 = Color3.fromRGB(130, 130, 130)
+            local tabboxObj = {}
+            tabboxObj.SubTabs = {}
+            tabboxObj.CurrentSubTab = nil
 
-            local separatorLine = Instance.new("Frame", sectionBox)
-            separatorLine.Name = "Separator"
-            separatorLine.Size = UDim2.new(1, 0, 0, 1)
-            separatorLine.BackgroundColor3 = currentTheme.Stroke
-            separatorLine.BorderSizePixel = 0
-            separatorLine.Visible = isOpen
+            function tabboxObj:AddTab(subTabName)
+                local subIndex = #tabboxObj.SubTabs + 1
 
-            local container = Instance.new("Frame", sectionBox)
-            container.Name = "Container"
-            container.BackgroundTransparency = 1
-            container.ClipsDescendants = true
+                local subTabBtn = Instance.new("TextButton", subTabBar)
+                subTabBtn.Name = subTabName .. "Btn"
+                subTabBtn.Size = UDim2.new(0, 0, 0, 24)
+                subTabBtn.AutomaticSize = Enum.AutomaticSize.X
+                subTabBtn.BackgroundColor3 = currentTheme.ButtonBG
+                subTabBtn.BackgroundTransparency = bgTrans
+                subTabBtn.Text = subTabName
+                subTabBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
+                subTabBtn.Font = Enum.Font.GothamMedium
+                subTabBtn.TextSize = 11
 
-            local cPad = Instance.new("UIPadding", container)
-            cPad.PaddingLeft = UDim.new(0, 6)
-            cPad.PaddingRight = UDim.new(0, 6)
-            cPad.PaddingTop = UDim.new(0, 6)
-            cPad.PaddingBottom = UDim.new(0, 6)
+                local sCorner = Instance.new("UICorner", subTabBtn)
+                sCorner.CornerRadius = UDim.new(0, 4)
 
-            local cLayout = Instance.new("UIListLayout", container)
-            cLayout.Padding = UDim.new(0, 5)
-            cLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                local sStroke = Instance.new("UIStroke", subTabBtn)
+                sStroke.Color = currentTheme.Stroke
+                sStroke.Thickness = 1
 
-            container.Size = UDim2.new(1, 0, 0, 0)
-            container.AutomaticSize = Enum.AutomaticSize.Y
+                local sPad = Instance.new("UIPadding", subTabBtn)
+                sPad.PaddingLeft = UDim.new(0, 8)
+                sPad.PaddingRight = UDim.new(0, 8)
 
-            local function updateSectionLayout()
-                local targetHeight = isOpen and (26 + 1 + cLayout.AbsoluteContentSize.Y + 12) or 26
-                separatorLine.Visible = isOpen
-                TweenService:Create(sectionBox, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, targetHeight)}):Play()
-            end
+                local subPage = Instance.new("Frame", subPagesHolder)
+                subPage.Name = subTabName .. "Page"
+                subPage.Size = UDim2.new(1, 0, 0, 0)
+                subPage.AutomaticSize = Enum.AutomaticSize.Y
+                subPage.BackgroundTransparency = 1
+                subPage.Visible = false
 
-            sectionBox.Size = isOpen and UDim2.new(1, 0, 0, 26 + 1 + cLayout.AbsoluteContentSize.Y + 12) or UDim2.new(1, 0, 0, 26)
-            
-            task.spawn(function()
-                task.wait()
-                if isOpen then
-                    sectionBox.Size = UDim2.new(1, 0, 0, 26 + 1 + cLayout.AbsoluteContentSize.Y + 12)
+                local spPad = Instance.new("UIPadding", subPage)
+                spPad.PaddingLeft = UDim.new(0, 6)
+                spPad.PaddingRight = UDim.new(0, 6)
+                spPad.PaddingTop = UDim.new(0, 4)
+                spPad.PaddingBottom = UDim.new(0, 6)
+
+                local spLayout = Instance.new("UIListLayout", subPage)
+                spLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                spLayout.Padding = UDim.new(0, 6)
+
+                local subMethods = buatElementMethods(subPage)
+
+                subTabBtn.MouseButton1Click:Connect(function()
+                    if tabboxObj.CurrentSubTab and tabboxObj.CurrentSubTab.Index ~= subIndex then
+                        tabboxObj.CurrentSubTab.Button.BackgroundColor3 = currentTheme.ButtonBG
+                        tabboxObj.CurrentSubTab.Button.TextColor3 = Color3.fromRGB(180, 180, 180)
+                        tabboxObj.CurrentSubTab.Page.Visible = false
+                    end
+
+                    subTabBtn.BackgroundColor3 = currentTheme.Accent
+                    subTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    subPage.Visible = true
+
+                    tabboxObj.CurrentSubTab = {Button = subTabBtn, Page = subPage, Index = subIndex}
+                end)
+
+                if subIndex == 1 then
+                    subTabBtn.BackgroundColor3 = currentTheme.Accent
+                    subTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    subPage.Visible = true
+                    tabboxObj.CurrentSubTab = {Button = subTabBtn, Page = subPage, Index = subIndex}
                 end
-            end)
 
-            toggleBtn.MouseButton1Click:Connect(function()
-                isOpen = not isOpen
-                toggleBtn.Image = isOpen and "rbxassetid://10709791523" or "rbxassetid://10709790948"
-                updateSectionLayout()
-            end)
+                table.insert(tabboxObj.SubTabs, {Button = subTabBtn, Page = subPage, Index = subIndex})
+                return subMethods
+            end
 
-            local sectionMethods = buatElementMethods(container)
-            sectionMethods.Container = container
-            return sectionMethods
+            return tabboxObj
         end
 
-        table.insert(self.Tabs, {Name = tabName, Button = button, Page = page, Card = frame, Scroll = scroll, TabObj = tabObj})  
-          
-        if #self.Tabs == 1 then  
-            page.Visible = true  
-            button.BackgroundColor3 = currentTheme.Accent  
-            button.ImageColor3 = Color3.fromRGB(255, 255, 255)  
-            tabLabel.Text = tabName 
-            window.CurrentTab = {Page = page, Button = button, Index = 1}
-        end  
-          
+        if tabIndex == 1 then
+            button.BackgroundColor3 = currentTheme.Accent
+            iconImg.ImageColor3 = Color3.fromRGB(255, 255, 255)
+            page.Position = UDim2.new(0, 0, 0, 0)
+            page.Visible = true
+            tabLabel.Text = tabName
+            window.CurrentTab = {Page = page, Button = button, Icon = iconImg, Index = tabIndex}
+        end
+
+        table.insert(window.Tabs, {Page = page, Button = button, Icon = iconImg, Index = tabIndex})
         return tabObj
-    end
-
-    function window:SetTitle(text)
-        sideTitle.Text = text
-    end
-
-    function window:SetDesc(text)
-        sideDesc.Text = text
     end
 
     return window
