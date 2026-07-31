@@ -13,7 +13,9 @@ library.CurrentTheme = nil
 
 local IconURL = "https://raw.githubusercontent.com/SCRIPTHUB-dev-god/User-Interface/refs/heads/main/icon/get.lua"
 local IconSource = game:HttpGet(IconURL)
-local iconMap = loadstring(IconSource .. "\n return iconMap")()
+local iconMap = loadstring(IconSource)()
+
+return iconMap
 
 local function resolveIcon(iconValue, fallbackKey)
     if type(iconValue) ~= "string" or iconValue == "" then
