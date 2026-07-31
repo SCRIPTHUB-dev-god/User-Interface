@@ -9,6 +9,7 @@ local window = library:window({
     title = "Premium Hub Mobile",
     desc = "v1.2.5",
     transparent = 0.15,
+    icon = "terminal"
     theme = "neon",
     autoshow = true,
     addbacksound = true
@@ -21,13 +22,7 @@ local window = library:window({
 
 **icon support**
 
-`apple`,`clipboard`,`code`,`copy`,`eye`
-`folder`,`globe`,`home`,`info`,`key`
-`laptop`,`rocket`,`search`,`server`
-`settings`,`shield`,`sprout`,`star`
-`sword`,`swords`,`terminal`,`user`
-
-**tag**
+https://lucide.dev
 ```luau
 window:AddTag({
     title = "Click Me",
