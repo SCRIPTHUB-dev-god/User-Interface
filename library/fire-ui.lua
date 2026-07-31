@@ -4,6 +4,7 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
 
 local oldGui = PlayerGui:FindFirstChild("PremiumMobileGui")
 if oldGui then oldGui:Destroy() end
@@ -11,20 +12,41 @@ if oldGui then oldGui:Destroy() end
 local library = {}
 library.CurrentTheme = nil
 
-local IconURL = "https://raw.githubusercontent.com/SCRIPTHUB-dev-god/User-Interface/refs/heads/main/icon/get.lua"
-local IconSource = game:HttpGet(IconURL)
-local iconMap = loadstring(IconSource)()
+local AutoStabilizer = {
+    MaxFrameBudget = 0.008,
+    LastTime = os.clock(),
+    ElementCount = 0
+}
 
-return iconMap
+function AutoStabilizer:Step()
+    self.ElementCount = self.ElementCount + 1
+    if self.ElementCount % 5 == 0 and (os.clock() - self.LastTime) > self.MaxFrameBudget then
+        RunService.Heartbeat:Wait()
+        self.LastTime = os.clock()
+    end
+end
+
+local iconMap = {}
+pcall(function()
+    local IconURL = "https://raw.githubusercontent.com/SCRIPTHUB-dev-god/User-Interface/refs/heads/main/icon/get.lua"
+    local IconSource = game:HttpGet(IconURL)
+    local loadedFn = loadstring(IconSource)
+    if loadedFn then
+        local result = loadedFn()
+        if type(result) == "table" then
+            iconMap = result
+        end
+    end
+end)
 
 local function resolveIcon(iconValue, fallbackKey)
     if type(iconValue) ~= "string" or iconValue == "" then
-        return iconMap[fallbackKey] or iconMap["code"]
+        return iconMap[fallbackKey] or iconMap["code"] or "rbxassetid://10734952003"
     end
     if iconValue:match("^rbxassetid://") or iconValue:match("^rbxasset://") or iconValue:match("^http") then
         return iconValue
     end
-    return iconMap[iconValue] or iconMap[fallbackKey] or iconMap["code"]
+    return iconMap[iconValue] or iconMap[fallbackKey] or iconMap["code"] or "rbxassetid://10734952003"
 end
 
 local themes = {
@@ -112,6 +134,7 @@ notifLayout.VerticalAlignment = Enum.VerticalAlignment.Top
 notifLayout.Padding = UDim.new(0, 8)
 
 function library:Notification(notifOptions)
+    AutoStabilizer:Step()
     notifOptions = notifOptions or {}
     local title = notifOptions.title or "Notification"
     local desc = notifOptions.desc or ""
@@ -188,6 +211,7 @@ function library:Notification(notifOptions)
 end
 
 function library:window(options)
+    AutoStabilizer:Step()
     options = options or {}
     local windowTitle = options.title or "library ui"
     local windowDesc = options.desc or "Premium v1.0"
@@ -207,10 +231,12 @@ function library:window(options)
     local function playInitSound()
         if addbacksound and not soundPlayed then
             soundPlayed = true
-            local s = Instance.new("Sound", game.SoundService)
-            s.SoundId = "rbxassetid://126047015098640"
-            s.Volume = 2
-            s:Play()
+            pcall(function()
+                local s = Instance.new("Sound", game:GetService("SoundService"))
+                s.SoundId = "rbxassetid://126047015098640"
+                s.Volume = 2
+                s:Play()
+            end)
         end
     end
 
@@ -218,7 +244,6 @@ function library:window(options)
     window.Tabs = {}
     window.CurrentTab = nil
     window.ToggleKey = Enum.KeyCode.G
-    local totalTags = 0
 
     function window:SetToggleKey(key)
         window.ToggleKey = key
@@ -497,6 +522,7 @@ function library:window(options)
     end
 
     function window:AddDivider(title)
+        AutoStabilizer:Step()
         local holder = Instance.new("Frame", SidebarScroll)
         holder.BackgroundTransparency = 1
         holder.Size = UDim2.new(1, -12, 0, 14)
@@ -740,10 +766,12 @@ function library:window(options)
 
     function window:destroy()
         if addbacksound then
-            local s = Instance.new("Sound", game.SoundService)
-            s.SoundId = "rbxassetid://111617177185247"
-            s.Volume = 2
-            s:Play()
+            pcall(function()
+                local s = Instance.new("Sound", game:GetService("SoundService"))
+                s.SoundId = "rbxassetid://111617177185247"
+                s.Volume = 2
+                s:Play()
+            end)
         end
         local t1 = TweenService:Create(MainUI, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {GroupTransparency = 1})
         t1:Play()
@@ -814,14 +842,13 @@ function library:window(options)
     end
 
     function window:AddTag(tagOptions)
+        AutoStabilizer:Step()
         tagOptions = tagOptions or {}
         local tagTitle = tagOptions.title or "Tag"
         local tagColor = tagOptions.color or Color3.fromRGB(40, 40, 40)
         local canClick = tagOptions.getclick or false
         local callback = tagOptions.callback or function() end
         local tagIcon = tagOptions.icon
-
-        totalTags = totalTags + 1
 
         local tagBtn = Instance.new("TextButton", TagContainer)
         tagBtn.Name = tagTitle .. "Tag"
@@ -893,6 +920,7 @@ function library:window(options)
         local methods = {}
 
         function methods:AddDivider(title)
+            AutoStabilizer:Step()
             local holder = Instance.new("Frame", containerFrame)
             holder.BackgroundTransparency = 1
             holder.Size = UDim2.new(1, 0, 0, 16)
@@ -955,6 +983,7 @@ function library:window(options)
         end
 
         function methods:Addbutton(btnOptions)
+            AutoStabilizer:Step()
             btnOptions = btnOptions or {}
             local title = btnOptions.title or "Button"
             local desc = btnOptions.desc or ""
@@ -1002,6 +1031,7 @@ function library:window(options)
         end
 
         function methods:Addtoggle(tglOptions)
+            AutoStabilizer:Step()
             tglOptions = tglOptions or {}
             local title = tglOptions.title or "Toggle"
             local desc = tglOptions.desc or ""
@@ -1058,6 +1088,7 @@ function library:window(options)
         end
 
         function methods:AddDropdown(ddOptions)
+            AutoStabilizer:Step()
             ddOptions = ddOptions or {}
             local title = ddOptions.Title or "Dropdown"
             local desc = ddOptions.Desc or ""
@@ -1168,6 +1199,7 @@ function library:window(options)
             end
 
             for i, val in ipairs(list) do
+                AutoStabilizer:Step()
                 local opt = Instance.new("TextButton", dropList)
                 opt.Size = UDim2.new(1, 0, 0, 28)
                 opt.BackgroundColor3 = table.find(selected, val) and currentTheme.SectionBG or currentTheme.ButtonBG
@@ -1201,23 +1233,28 @@ function library:window(options)
                 end)
             end
 
+            local searchDebounce
             if search and searchBox then
                 searchBox:GetPropertyChangedSignal("Text"):Connect(function()
-                    local searchText = searchBox.Text:lower()
-                    local visibleCount = 0
-                    for _, item in ipairs(optionButtons) do
-                        if searchText == "" or item.Value:lower():find(searchText) then
-                            item.Button.Visible = true
-                            visibleCount = visibleCount + 1
-                        else
-                            item.Button.Visible = false
+                    if searchDebounce then task.cancel(searchDebounce) end
+                    searchDebounce = task.delay(0.05, function()
+                        local searchText = searchBox.Text:lower()
+                        local visibleCount = 0
+                        for idx, item in ipairs(optionButtons) do
+                            if idx % 10 == 0 then AutoStabilizer:Step() end
+                            if searchText == "" or item.Value:lower():find(searchText, 1, true) then
+                                item.Button.Visible = true
+                                visibleCount = visibleCount + 1
+                            else
+                                item.Button.Visible = false
+                            end
                         end
-                    end
-                    local newHeight = (visibleCount * 28) + 30
-                    dropList.Size = UDim2.new(1, 0, 0, newHeight)
-                    if expanded then
-                        ddFrame.Size = UDim2.new(1, 0, 0, 36 + newHeight)
-                    end
+                        local newHeight = (visibleCount * 28) + 30
+                        dropList.Size = UDim2.new(1, 0, 0, newHeight)
+                        if expanded then
+                            ddFrame.Size = UDim2.new(1, 0, 0, 36 + newHeight)
+                        end
+                    end)
                 end)
             end
 
@@ -1238,6 +1275,7 @@ function library:window(options)
         end
 
         function methods:AddSlider(sldOptions)
+            AutoStabilizer:Step()
             sldOptions = sldOptions or {}
             local title = sldOptions.Title or "Slider"
             local desc = sldOptions.Desc or ""
@@ -1347,6 +1385,7 @@ function library:window(options)
         end
 
         function methods:AddParagraph(pOptions)
+            AutoStabilizer:Step()
             pOptions = pOptions or {}
             local title = pOptions.Title or "Paragraph"
             local desc = pOptions.Desc or ""
@@ -1396,6 +1435,7 @@ function library:window(options)
         end
 
         function methods:AddKeybind(kbOptions)
+            AutoStabilizer:Step()
             kbOptions = kbOptions or {}
             local title = kbOptions.title or kbOptions.Title or "Keybind"
             local desc = kbOptions.desc or kbOptions.Desc or ""
@@ -1456,6 +1496,7 @@ function library:window(options)
         end
 
         function methods:AddInput(inpOptions)
+            AutoStabilizer:Step()
             inpOptions = inpOptions or {}
             local title = inpOptions.Title or "Input"
             local desc = inpOptions.Desc or ""
@@ -1507,6 +1548,7 @@ function library:window(options)
         end
 
         function methods:AddColorpicker(cpOptions)
+            AutoStabilizer:Step()
             cpOptions = cpOptions or {}
             local title = cpOptions.Title or "Colorpicker"
             local desc = cpOptions.Desc or ""
@@ -1658,6 +1700,7 @@ function library:window(options)
     end
 
     function window:AddTab(tabName, iconName)
+        AutoStabilizer:Step()
         local tabIndex = #self.Tabs + 1
         local button, iconImg = buatButton(tabName.."Btn", iconName or "code")
 
@@ -1734,6 +1777,7 @@ function library:window(options)
         local tabObj = buatElementMethods(scroll)
 
         function tabObj:AddTabbox()
+            AutoStabilizer:Step()
             local tabboxBox = Instance.new("Frame", scroll)
             tabboxBox.Name = "Tabbox"
             tabboxBox.BackgroundColor3 = currentTheme.SectionBG
@@ -1781,6 +1825,7 @@ function library:window(options)
             subTabMethods.CurrentSubTab = nil
 
             function subTabMethods:AddTab(subTabName)
+                AutoStabilizer:Step()
                 local subTabBtn = Instance.new("TextButton", subTabBar)
                 subTabBtn.Name = subTabName .. "Btn"
                 subTabBtn.Size = UDim2.new(0, 0, 0, 24)
