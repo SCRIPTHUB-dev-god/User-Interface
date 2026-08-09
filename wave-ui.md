@@ -9,12 +9,20 @@ local window = library:CreateWindow({
 	title = "Tester",
 	desc = "this a good ui library",
 	footer = "wave ui: v1.3",
-	open = true
+    opened = true,
+	info = false,
+	transparency = 0.12,
 })
 ```
 **tag**
 ```luau
-library:SetTopTags({"MAIN", "VIP"})
+window:AddTag({
+    title = "Tester",
+    canclicked = true,
+    callback = function()
+        
+    end
+})
 ```
 **tab**
 ```luau
@@ -31,7 +39,7 @@ local allsideGroup = Tab:CreateGroupBox("Subsystem Router", "allside", "open")
 local subTab1 = leftGroup:tabbox("Main Frame")
 local subTab2 = leftGroup:tabbox("Secondary Frame")
 ```
-# ================
+---
 # element
 **button**
 ```luau
@@ -94,11 +102,15 @@ rightGroup:CreateDropdown({
 	end
 })
 ```
+**color picker**
+```lua
+leftGroup:CreateColorpicker("Accent", Color3.fromRGB(0,140,255), function() end)
+```
 **divider**
 ```luau
 leftGroup:CreateDivider()
 ```
-
+---
 # tutorial
 place load library on top and window in down load library
 place tag or not If not, the search bar will still be there. If you add a tag, the search bar will not be there.
