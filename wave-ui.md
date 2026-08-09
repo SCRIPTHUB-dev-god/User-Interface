@@ -33,6 +33,7 @@ library:Addnotification({
 })
 ```
 ---
+# utility
 **tab**
 ```luau
 local Tab = library:CreateTab("Combat Frame")
