@@ -24,6 +24,15 @@ window:AddTag({
     end
 })
 ```
+**notification**
+```lua
+library:Addnotification({
+    title = "Warning",
+    desc = "Low health!",
+    duration = 5
+})
+```
+---
 **tab**
 ```luau
 local Tab = library:CreateTab("Combat Frame")
