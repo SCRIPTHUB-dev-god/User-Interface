@@ -9,7 +9,7 @@ local window = library:CreateWindow({
 	title = "Tester",
 	desc = "this a good ui library",
 	footer = "wave ui: v1.3",
-    opened = true,
+	opened = true,
 	info = false,
 	transparency = 0.12,
 })
