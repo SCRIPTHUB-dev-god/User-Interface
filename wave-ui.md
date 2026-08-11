@@ -146,6 +146,11 @@ leftGroup:CreateColorpicker("Accent", Color3.fromRGB(0,140,255), function() end)
 leftGroup:CreateDivider("divider") -- or () simple
 ```
 ---
+**example**
+```luau
+loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/User-Interface/refs/heads/main/example/wave-ui.lua"))()
+```
+---
 # tutorial
 place load library on top and window in down load library
 place tag or not If not, the search bar will still be there. If you add a tag, the search bar will not be there.
