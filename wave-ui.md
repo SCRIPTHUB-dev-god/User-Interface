@@ -49,6 +49,10 @@ local allsideGroup = Tab:CreateGroupBox("Subsystem Router", "allside", "open")
 local subTab1 = leftGroup:tabbox("Main Frame")
 local subTab2 = leftGroup:tabbox("Secondary Frame")
 ```
+**set moving text**
+```lua
+window:SetMovingText("wave ui v1.6")
+```
 ---
 # element
 **button**
@@ -57,22 +61,15 @@ leftGroup:CreateButton("Teleport to Base", function()
 	print("Teleporting...")
 end)
 ```
-**dual button**
+**sub button**
 ```luau
-leftGroup:CreateDualButton({
-	Button1 = {
-		Text = "Kill All",
-		Callback = function()
-			print("Kill All Triggered")
-		end
-	},
-	Button2 = {
-		Text = "Bring All",
-		Callback = function()
-			print("Bring All Triggered")
-		end
-	}
-})
+local sub = leftGroup:CreateButton("Teleport to Base", function()
+	print("Teleporting...")
+end)
+
+sub:CreateButton("Teleport to player", function()
+	print("Teleporting...")
+end)
 ```
 **toggle**
 ```luau
@@ -112,16 +109,32 @@ rightGroup:CreateDropdown({
 	end
 })
 ```
+**paragraph**
+```lua
+rightGroup:CreateParagraph({
+    title = "just a paragraph",
+    desc = "new element in the library",
+})
+```
+**label**
+```lua
+rightGroup:CreateLabel("test label")
+```
+**keybind**
+```lua
+rightGroup:CreateKeybind("G", function()
+end)
+```
 **color picker**
 ```lua
 leftGroup:CreateColorpicker("Accent", Color3.fromRGB(0,140,255), function() end)
 ```
 **divider**
 ```luau
-leftGroup:CreateDivider()
+leftGroup:CreateDivider("divider") -- or () simple
 ```
 ---
 # tutorial
 place load library on top and window in down load library
 place tag or not If not, the search bar will still be there. If you add a tag, the search bar will not be there.
-place tab and group box first the new element
+place tab and group box or tabbox first the new element
