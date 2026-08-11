@@ -1,5 +1,16 @@
 # wave ui library
 **get library**
+
+**select version**
+```luau
+local version = "v1.6"
+local library = loadstring(game:HttpGet("https://github.com/SCRIPTHUB-dev-god/User-Interface/releases/download/..version../wave-ui.lua"))()
+```
+**lastest version** <-- recommend
+```luau
+local library = loadstring(game:HttpGet("https://github.com/SCRIPTHUB-dev-god/User-Interface/releases/latest/download/wave-ui.lua"))()
+```
+**original** <-- slow update
 ```luau
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/User-Interface/refs/heads/main/library/wave-ui.lua"))()
 ```
@@ -50,7 +61,7 @@ local subTab1 = leftGroup:tabbox("Main Frame")
 local subTab2 = leftGroup:tabbox("Secondary Frame")
 ```
 **set moving text**
-```lua
+```luau
 window:SetMovingText("wave ui v1.6")
 ```
 ---
@@ -110,23 +121,23 @@ rightGroup:CreateDropdown({
 })
 ```
 **paragraph**
-```lua
+```luau
 rightGroup:CreateParagraph({
     title = "just a paragraph",
     desc = "new element in the library",
 })
 ```
 **label**
-```lua
+```luau
 rightGroup:CreateLabel("test label")
 ```
 **keybind**
-```lua
+```luau
 rightGroup:CreateKeybind("G", function()
 end)
 ```
 **color picker**
-```lua
+```luau
 leftGroup:CreateColorpicker("Accent", Color3.fromRGB(0,140,255), function() end)
 ```
 **divider**
