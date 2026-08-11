@@ -4,7 +4,7 @@
 \ \/  \/ //_\\ \ / /_\ / / \ \  / /\/
  \  /\  /  _  \ V //__ \ \_/ /\/ /_  
   \/  \/\_/ \_/\_/\__/  \___/\____/  
-        ui library open sourch
+        ui library open source
 ]]
 
 local players = game:GetService("Players")
@@ -242,7 +242,7 @@ waveText.Name = "WaveText"
 waveText.Size = UDim2.new(1, 0, 1, 0)
 waveText.Position = UDim2.new(0, -100, 0, 0)
 waveText.BackgroundTransparency = 1
-waveText.Text = "wave ui v1.6"
+waveText.Text = "wave ui"
 waveText.TextColor3 = Color3.fromRGB(255, 255, 255)
 waveText.TextSize = 14
 waveText.Font = Enum.Font.GothamBold
@@ -1012,8 +1012,8 @@ toggleClickBtn.MouseButton1Click:Connect(function()
 end)
 
 tabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-	tabContainer.CanvasSize = UDim2.new(0, 0, 0, tabLayout.AbsoluteContentSize.Y)
 end)
+
 
 local pages = {}
 local tabs = {}
@@ -1387,8 +1387,10 @@ function library:CreateTab(tabName)
 	page.BackgroundTransparency = 1
 	page.BorderSizePixel = 0
 	page.Visible = false
-	page.ScrollBarThickness = 0
+	page.ScrollBarThickness = 2
 	page.CanvasSize = UDim2.new(0, 0, 0, 0)
+	page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	page.ScrollingDirection = Enum.ScrollingDirection.Y
 	page.ClipsDescendants = true
 	page.Parent = contentContainer
 	
@@ -1405,8 +1407,8 @@ function library:CreateTab(tabName)
 	pageLayout.Parent = page
 	
 	pageLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-		page.CanvasSize = UDim2.new(0, 0, 0, pageLayout.AbsoluteContentSize.Y + 20)
-	end)
+		end)
+
 	
 	table.insert(pages, page)
 	table.insert(tabs, tabBtn)
@@ -1463,6 +1465,7 @@ function library:CreateTab(tabName)
 		groupBox.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
 		groupBox.BorderSizePixel = 0
 		groupBox.ClipsDescendants = true
+		groupBox.AutomaticSize = Enum.AutomaticSize.Y
 		
 		local groupCorner = Instance.new("UICorner")
 		groupCorner.CornerRadius = UDim.new(0, 8)
@@ -1504,12 +1507,38 @@ function library:CreateTab(tabName)
 		
 		local boxContent = Instance.new("Frame")
 		boxContent.Name = "ElementsContainer"
-		boxContent.Size = UDim2.new(1, 0, 1, -32)
+		boxContent.Size = UDim2.new(1, 0, 0, 0)
+		boxContent.AutomaticSize = Enum.AutomaticSize.Y
 		boxContent.Position = UDim2.new(0, 0, 0, 30)
 		boxContent.BackgroundTransparency = 1
 		boxContent.BorderSizePixel = 0
 		boxContent.Visible = isExpanded
 		boxContent.Parent = groupBox
+		task.spawn(function()
+			while groupBox and groupBox.Parent do
+				task.wait(0.1)
+				if not isExpanded then continue end
+				if not boxContent.Visible then continue end
+				local maxBottom = 0
+				for _, child in ipairs(boxContent:GetChildren()) do
+					if child:IsA("GuiObject") and child.Visible then
+						local bottom = child.AbsolutePosition.Y + child.AbsoluteSize.Y
+						if bottom > maxBottom then maxBottom = bottom end
+					end
+				end
+				if maxBottom > 0 then
+					local groupBottom = groupBox.AbsolutePosition.Y + groupBox.AbsoluteSize.Y
+					if maxBottom + 8 > groupBottom then
+						local diff = (maxBottom - groupBottom) + 12
+						if groupBox.AutomaticSize == Enum.AutomaticSize.Y then
+						else
+							groupBox.Size = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, groupBox.Size.Y.Offset + diff)
+						end
+					end
+				end
+			end
+		end)
+
 		
 		local boxLayout = Instance.new("UIListLayout")
 		boxLayout.Padding = UDim.new(0, 5)
@@ -1536,60 +1565,68 @@ function library:CreateTab(tabName)
 		local currentDualButtonRow = nil
 
 		local function updateDimensions()
-			local currentScale = uiScale.Scale
-			local adjustedContentHeight = 0
-			if hasTabs then
-				if activeTabPageLayout then
-					groupPagesContainer.Size = UDim2.new(1, 0, 0, activeTabPageLayout.AbsoluteContentSize.Y)
-					adjustedContentHeight = groupTabBar.Size.Y.Offset + 4 + (activeTabPageLayout.AbsoluteContentSize.Y / currentScale)
-				end
-			else
-				adjustedContentHeight = boxLayout.AbsoluteContentSize.Y / currentScale
-			end
-			local totalNeeded = adjustedContentHeight + 40
-			currentCalculatedHeight = totalNeeded
-			
-			if isExpanded then
-				groupBox.Size = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, currentCalculatedHeight)
-				
+			if not isExpanded then
+				groupBox.AutomaticSize = Enum.AutomaticSize.None
+				groupBox.Size = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, 30)
 				if layoutType ~= "allside" and groupBox.Parent:IsA("Frame") then
 					local row = groupBox.Parent
-					local maxTarget = 30
-					for _, child in pairs(row:GetChildren()) do
-						if child:IsA("Frame") and child.Size.Y.Offset > maxTarget then
-							maxTarget = child.Size.Y.Offset
-						end
-					end
-					row.Size = UDim2.new(1, 0, 0, maxTarget)
+					row.AutomaticSize = Enum.AutomaticSize.Y
+					row.Size = UDim2.new(1, 0, 0, 0)
 				end
+				return
+			end
+			groupBox.AutomaticSize = Enum.AutomaticSize.Y
+			groupBox.Size = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, 0)
+			if hasTabs then
+				if activeTabPageLayout then
+					groupPagesContainer.AutomaticSize = Enum.AutomaticSize.Y
+					groupPagesContainer.Size = UDim2.new(1, 0, 0, 0)
+					task.spawn(function()
+						task.wait()
+						groupPagesContainer.Size = UDim2.new(1, 0, 0, activeTabPageLayout.AbsoluteContentSize.Y)
+					end)
+				end
+			end
+			if layoutType ~= "allside" and groupBox.Parent:IsA("Frame") then
+				local row = groupBox.Parent
+				row.AutomaticSize = Enum.AutomaticSize.Y
+				row.Size = UDim2.new(1, 0, 0, 0)
 			end
 		end
 		
-		boxLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateDimensions)
+		boxLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+			updateDimensions()
+		end)
 		scaleChangedBindable.Event:Connect(updateDimensions)
+		task.spawn(function()
+			while groupBox and groupBox.Parent do
+				task.wait(0.15)
+				if isExpanded and boxLayout then
+					local needed = boxLayout.AbsoluteContentSize.Y + 40
+					if needed > 0 then
+						if groupBox.AutomaticSize == Enum.AutomaticSize.None then
+							groupBox.Size = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, 30)
+						end
+					end
+				end
+			end
+		end)
 		
 		toggleBtn.MouseButton1Click:Connect(function()
 			isExpanded = not isExpanded
 			toggleBtn.Text = isExpanded and "-" or "+"
 			boxContent.Visible = isExpanded
-			
-			local targetHeight = isExpanded and currentCalculatedHeight or collapsedHeight
-			local targetSize = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, targetHeight)
-			
-			tweenService:Create(groupBox, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = targetSize}):Play()
-			
+			if isExpanded then
+				groupBox.AutomaticSize = Enum.AutomaticSize.Y
+				groupBox.Size = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, 0)
+			else
+				groupBox.AutomaticSize = Enum.AutomaticSize.None
+				groupBox.Size = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, 30)
+			end
 			if layoutType ~= "allside" and groupBox.Parent:IsA("Frame") then
 				local row = groupBox.Parent
-				local maxTarget = collapsedHeight
-				for _, child in pairs(row:GetChildren()) do
-					if child:IsA("Frame") then
-						local currentH = (child == groupBox) and targetHeight or child.Size.Y.Offset
-						if currentH > maxTarget then
-							maxTarget = currentH
-						end
-					end
-				end
-				tweenService:Create(row, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, maxTarget)}):Play()
+				row.AutomaticSize = Enum.AutomaticSize.Y
+				row.Size = UDim2.new(1, 0, 0, 0)
 			end
 		end)
 		
@@ -2631,6 +2668,12 @@ function innerElements:CreateColorpicker(text, default, callback)
 				if currentTabBoxIndex == thisIdx then
 					updateDimensions()
 				end
+				task.spawn(function()
+					task.wait()
+					if page and pageLayout then
+						page.CanvasSize = UDim2.new(0, 0, 0, pageLayout.AbsoluteContentSize.Y + 30)
+					end
+				end)
 			end)
 			
 			tabBtn.MouseButton1Click:Connect(function()
