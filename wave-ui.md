@@ -3,14 +3,14 @@
 
 **select version**
 ```luau
-local version = "v1.6"
+local version = "v1.6.1"
 local library = loadstring(game:HttpGet("https://github.com/SCRIPTHUB-dev-god/User-Interface/releases/download/..version../wave-ui.lua"))()
 ```
 **lastest version** <-- recommend
 ```luau
 local library = loadstring(game:HttpGet("https://github.com/SCRIPTHUB-dev-god/User-Interface/releases/latest/download/wave-ui.lua"))()
 ```
-**original** <-- slow update
+**raw loader** <-- slow update
 ```luau
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/User-Interface/refs/heads/main/library/wave-ui.lua"))()
 ```
@@ -144,6 +144,21 @@ leftGroup:CreateColorpicker("Accent", Color3.fromRGB(0,140,255), function() end)
 **divider**
 ```luau
 leftGroup:CreateDivider("divider") -- or () simple
+```
+**code**
+```luau
+subTab3:Createcode({
+     title = "Example",
+     content = [[print("Hello World")]],
+})
+```
+**discord invite**
+```luau
+subTab3:Createinvite({
+     name = "My Discord",
+     image = "123456789", -- direct id or "rbxassetid://id"
+     link = "https://discord.gg/xxxxxx",
+})
 ```
 ---
 **example**
