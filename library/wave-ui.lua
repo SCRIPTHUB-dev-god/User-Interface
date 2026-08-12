@@ -11,6 +11,7 @@ local players = game:GetService("Players")
 local localPlayer = players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 local userInputService = game:GetService("UserInputService")
+local httpService = game:GetService("HttpService")
 local tweenService = game:GetService("TweenService")
 local runService = game:GetService("RunService")
 
@@ -1614,19 +1615,47 @@ function library:CreateTab(tabName)
 		
 		toggleBtn.MouseButton1Click:Connect(function()
 			isExpanded = not isExpanded
-			toggleBtn.Text = isExpanded and "-" or "+"
-			boxContent.Visible = isExpanded
+			local tweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 			if isExpanded then
-				groupBox.AutomaticSize = Enum.AutomaticSize.Y
-				groupBox.Size = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, 0)
-			else
+				boxContent.Visible = true
+				toggleBtn.Text = "-"
 				groupBox.AutomaticSize = Enum.AutomaticSize.None
-				groupBox.Size = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, 30)
-			end
-			if layoutType ~= "allside" and groupBox.Parent:IsA("Frame") then
-				local row = groupBox.Parent
-				row.AutomaticSize = Enum.AutomaticSize.Y
-				row.Size = UDim2.new(1, 0, 0, 0)
+				local targetH = boxLayout.AbsoluteContentSize.Y + 40
+				if targetH < 30 then targetH = 30 end
+				local tween = tweenService:Create(groupBox, tweenInfo, {Size = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, targetH)})
+				tween:Play()
+				tween.Completed:Connect(function()
+					if isExpanded then
+						groupBox.AutomaticSize = Enum.AutomaticSize.Y
+						groupBox.Size = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, 0)
+					end
+				end)
+				if layoutType ~= "allside" and groupBox.Parent:IsA("Frame") then
+					local row = groupBox.Parent
+					row.AutomaticSize = Enum.AutomaticSize.Y
+					row.Size = UDim2.new(1, 0, 0, 0)
+				end
+				local rotTween = tweenService:Create(toggleBtn, tweenInfo, {Rotation = 0})
+				rotTween:Play()
+			else
+				toggleBtn.Text = "+"
+				local currentH = groupBox.Size.Y.Offset
+				if currentH < 30 then currentH = boxLayout.AbsoluteContentSize.Y + 40 end
+				groupBox.AutomaticSize = Enum.AutomaticSize.None
+				groupBox.Size = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, currentH)
+				local tween = tweenService:Create(groupBox, tweenInfo, {Size = UDim2.new(groupBox.Size.X.Scale, groupBox.Size.X.Offset, 0, 30)})
+				tween:Play()
+				tween.Completed:Connect(function()
+					if not isExpanded then
+						boxContent.Visible = false
+					end
+				end)
+				if layoutType ~= "allside" and groupBox.Parent:IsA("Frame") then
+					local row = groupBox.Parent
+					tweenService:Create(row, tweenInfo, {Size = UDim2.new(1, 0, 0, 30)}):Play()
+				end
+				local rotTween = tweenService:Create(toggleBtn, tweenInfo, {Rotation = 90})
+				rotTween:Play()
 			end
 		end)
 		
@@ -2087,19 +2116,40 @@ function library:CreateTab(tabName)
 						end
 					else
 						mainBtn.Text = " " .. text .. " : " .. tostring(option)
-						dropFrame.Size = UDim2.new(1, 0, 0, 24)
-						updateDimensions()
+						isOpened = false
+						local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+						tweenService:Create(dropFrame, tweenInfo, {Size = UDim2.new(1, 0, 0, 24)}):Play()
+						tweenService:Create(arrow, tweenInfo, {Rotation = 0}):Play()
+						task.spawn(function()
+							task.wait(0.15)
+							updateDimensions()
+						end)
 						if cb then cb(option) end
 					end
 				end)
 			end
 			
 			local isOpened = false
+			local arrow = Instance.new("TextLabel")
+			arrow.Size = UDim2.new(0, 20, 0, 24)
+			arrow.Position = UDim2.new(1, -20, 0, 0)
+			arrow.BackgroundTransparency = 1
+			arrow.Text = "▼"
+			arrow.TextColor3 = Color3.fromRGB(160, 160, 165)
+			arrow.TextSize = 10
+			arrow.Font = Enum.Font.GothamBold
+			arrow.Parent = dropFrame
 			mainBtn.MouseButton1Click:Connect(function()
 				isOpened = not isOpened
 				local targetH = isOpened and (24 + #list * 20) or 24
-				dropFrame.Size = UDim2.new(1, 0, 0, targetH)
-				updateDimensions()
+				local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+				tweenService:Create(dropFrame, tweenInfo, {Size = UDim2.new(1, 0, 0, targetH)}):Play()
+				local rotTarget = isOpened and 180 or 0
+				tweenService:Create(arrow, tweenInfo, {Rotation = rotTarget}):Play()
+				task.spawn(function()
+					task.wait(0.15)
+					updateDimensions()
+				end)
 			end)
 			return dropFrame
 		end
@@ -2143,6 +2193,250 @@ function library:CreateTab(tabName)
 		end
 		
 		
+		
+		function innerElements:Createcode(config)
+			if hasTabs then return end
+			currentDualButtonRow = nil
+			config = config or {}
+			local titleText = config.title or config.Title or "Code"
+			local contentText = config.content or config.Content or config.text or config.Text or ""
+			if type(contentText) ~= "string" then contentText = tostring(contentText) end
+
+			local codeFrame = Instance.new("Frame")
+			codeFrame.Size = UDim2.new(1, 0, 0, 80)
+			codeFrame.AutomaticSize = Enum.AutomaticSize.Y
+			codeFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+			codeFrame.BorderSizePixel = 0
+			codeFrame.Parent = boxContent
+			Instance.new("UICorner", codeFrame).CornerRadius = UDim.new(0, 6)
+			local stroke = Instance.new("UIStroke", codeFrame)
+			stroke.Color = Color3.fromRGB(50, 50, 55)
+			stroke.Thickness = 1
+			stroke.Parent = codeFrame
+
+			local header = Instance.new("Frame")
+			header.Size = UDim2.new(1, 0, 0, 28)
+			header.BackgroundColor3 = Color3.fromRGB(32, 32, 36)
+			header.BorderSizePixel = 0
+			header.Parent = codeFrame
+			local headerCorner = Instance.new("UICorner", header)
+			headerCorner.CornerRadius = UDim.new(0, 6)
+			local headerFix = Instance.new("Frame")
+			headerFix.Size = UDim2.new(1, 0, 0, 6)
+			headerFix.Position = UDim2.new(0, 0, 1, -6)
+			headerFix.BackgroundColor3 = Color3.fromRGB(32, 32, 36)
+			headerFix.BorderSizePixel = 0
+			headerFix.Parent = header
+
+			local titleLabel = Instance.new("TextLabel")
+			titleLabel.Size = UDim2.new(1, -60, 1, 0)
+			titleLabel.Position = UDim2.new(0, 10, 0, 0)
+			titleLabel.BackgroundTransparency = 1
+			titleLabel.Text = titleText
+			titleLabel.TextColor3 = Color3.fromRGB(240, 240, 245)
+			titleLabel.TextSize = 11
+			titleLabel.Font = Enum.Font.GothamBold
+			titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+			titleLabel.Parent = header
+
+			local copyBtn = Instance.new("ImageButton")
+			copyBtn.Name = "CopyIconBtn"
+			copyBtn.Size = UDim2.new(0, 18, 0, 18)
+			copyBtn.Position = UDim2.new(1, -26, 0.5, -9)
+			copyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+			copyBtn.BorderSizePixel = 0
+			copyBtn.Image = "rbxassetid://10709812159"
+			copyBtn.ImageColor3 = Color3.fromRGB(200, 200, 210)
+			copyBtn.Parent = header
+			Instance.new("UICorner", copyBtn).CornerRadius = UDim.new(0, 4)
+
+			local function setCopyIcon(assetId)
+				local success = false
+				pcall(function()
+					if httpService then
+						httpService:JSONEncode({test = 1})
+					end
+					success = true
+				end)
+				copyBtn.Image = assetId
+			end
+
+			local scrollFrame = Instance.new("ScrollingFrame")
+			scrollFrame.Name = "CodeScroll"
+			scrollFrame.Size = UDim2.new(1, -12, 0, 50)
+			scrollFrame.Position = UDim2.new(0, 6, 0, 34)
+			scrollFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 24)
+			scrollFrame.BorderSizePixel = 0
+			scrollFrame.ScrollBarThickness = 4
+			scrollFrame.ScrollingDirection = Enum.ScrollingDirection.X
+			scrollFrame.AutomaticCanvasSize = Enum.AutomaticSize.X
+			scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+			scrollFrame.ScrollingEnabled = true
+			scrollFrame.Parent = codeFrame
+			Instance.new("UICorner", scrollFrame).CornerRadius = UDim.new(0, 4)
+
+			local codeLabel = Instance.new("TextLabel")
+			codeLabel.Size = UDim2.new(0, 0, 1, 0)
+			codeLabel.AutomaticSize = Enum.AutomaticSize.X
+			codeLabel.BackgroundTransparency = 1
+			codeLabel.Text = contentText
+			codeLabel.TextColor3 = Color3.fromRGB(180, 180, 190)
+			codeLabel.TextSize = 11
+			codeLabel.Font = Enum.Font.Code
+			codeLabel.TextXAlignment = Enum.TextXAlignment.Left
+			codeLabel.TextYAlignment = Enum.TextYAlignment.Center
+			codeLabel.TextWrapped = false
+			codeLabel.Parent = scrollFrame
+
+			local pad = Instance.new("UIPadding", codeLabel)
+			pad.PaddingLeft = UDim.new(0, 8)
+			pad.PaddingRight = UDim.new(0, 8)
+
+			copyBtn.MouseButton1Click:Connect(function()
+				local copied = false
+				if setclipboard then
+					pcall(function() setclipboard(contentText) end)
+					copied = true
+				elseif toclipboard then
+					pcall(function() toclipboard(contentText) end)
+					copied = true
+				elseif set_clipboard then
+					pcall(function() set_clipboard(contentText) end)
+					copied = true
+				end
+				if copied then
+					local origColor = copyBtn.ImageColor3
+					copyBtn.ImageColor3 = Color3.fromRGB(80, 200, 120)
+					task.wait(1)
+					copyBtn.ImageColor3 = origColor
+					copyBtn.Image = "rbxassetid://10709812159"
+				end
+			end)
+
+			task.spawn(function()
+				task.wait(0.1)
+				updateDimensions()
+			end)
+
+			return codeFrame
+		end
+
+		function innerElements:Createinvite(config)
+			if hasTabs then return end
+			currentDualButtonRow = nil
+			config = config or {}
+			local nameText = config.name or config.Name or config.title or "Discord"
+			local imageId = config.image or config.Image or config.icon or ""
+			local linkText = config.link or config.Link or config.invite or ""
+
+			local inviteFrame = Instance.new("Frame")
+			inviteFrame.Size = UDim2.new(1, 0, 0, 90)
+			inviteFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+			inviteFrame.BorderSizePixel = 0
+			inviteFrame.Parent = boxContent
+			Instance.new("UICorner", inviteFrame).CornerRadius = UDim.new(0, 8)
+			local stroke = Instance.new("UIStroke", inviteFrame)
+			stroke.Color = Color3.fromRGB(50, 50, 55)
+			stroke.Thickness = 1
+			stroke.Parent = inviteFrame
+
+			local topArea = Instance.new("Frame")
+			topArea.Size = UDim2.new(1, 0, 0, 50)
+			topArea.BackgroundTransparency = 1
+			topArea.Parent = inviteFrame
+
+			local imgLabel = Instance.new("ImageLabel")
+			imgLabel.Size = UDim2.new(0, 40, 0, 40)
+			imgLabel.Position = UDim2.new(0, 10, 0, 10)
+			imgLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+			imgLabel.BorderSizePixel = 0
+			imgLabel.Parent = topArea
+			Instance.new("UICorner", imgLabel).CornerRadius = UDim.new(0, 20)
+			local imgStroke = Instance.new("UIStroke", imgLabel)
+			imgStroke.Color = Color3.fromRGB(60, 60, 65)
+			imgStroke.Thickness = 1
+			imgStroke.Parent = imgLabel
+
+			if imageId ~= "" then
+				local imgStr = tostring(imageId)
+				pcall(function()
+					if httpService then
+						local _ = httpService:JSONEncode({id = imgStr})
+					end
+				end)
+				if tonumber(imgStr) then
+					imgLabel.Image = "rbxassetid://" .. imgStr
+				elseif imgStr:find("rbxassetid://") then
+					imgLabel.Image = imgStr
+				elseif imgStr:find("rbxasset") then
+					imgLabel.Image = imgStr
+				elseif imgStr:find("http") then
+					imgLabel.Image = imgStr
+				else
+					if tonumber(imgStr) then
+						imgLabel.Image = "rbxassetid://" .. imgStr
+					else
+						imgLabel.Image = imgStr
+					end
+				end
+			else
+				imgLabel.Image = "rbxassetid://0"
+			end
+
+			local nameLabel = Instance.new("TextLabel")
+			nameLabel.Size = UDim2.new(1, -70, 0, 20)
+			nameLabel.Position = UDim2.new(0, 60, 0, 15)
+			nameLabel.BackgroundTransparency = 1
+			nameLabel.Text = nameText
+			nameLabel.TextColor3 = Color3.fromRGB(240, 240, 245)
+			nameLabel.TextSize = 13
+			nameLabel.Font = Enum.Font.GothamBold
+			nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+			nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+			nameLabel.Parent = topArea
+
+			local copyBtn = Instance.new("TextButton")
+			copyBtn.Size = UDim2.new(1, -20, 0, 28)
+			copyBtn.Position = UDim2.new(0, 10, 1, -34)
+			copyBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+			copyBtn.Text = "Copy Invite Link"
+			copyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+			copyBtn.TextSize = 11
+			copyBtn.Font = Enum.Font.GothamBold
+			copyBtn.Parent = inviteFrame
+			Instance.new("UICorner", copyBtn).CornerRadius = UDim.new(0, 6)
+
+			copyBtn.MouseButton1Click:Connect(function()
+				local copied = false
+				if setclipboard then
+					pcall(function() setclipboard(linkText) end)
+					copied = true
+				elseif toclipboard then
+					pcall(function() toclipboard(linkText) end)
+					copied = true
+				elseif set_clipboard then
+					pcall(function() set_clipboard(linkText) end)
+					copied = true
+				end
+				if copied then
+					local orig = copyBtn.Text
+					copyBtn.Text = "Copied!"
+					copyBtn.BackgroundColor3 = Color3.fromRGB(60, 180, 100)
+					task.wait(1.2)
+					copyBtn.Text = orig
+					copyBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+				end
+			end)
+
+			task.spawn(function()
+				task.wait(0.1)
+				updateDimensions()
+			end)
+
+			return inviteFrame
+		end
+
+
 		function innerElements:CreateParagraph(config)
 			if hasTabs then return end
 			local titleText = ""
@@ -2233,34 +2527,53 @@ function library:CreateTab(tabName)
 				dividerText = text
 			end
 			local divFrame = Instance.new("Frame")
-			divFrame.Size = UDim2.new(1, 0, 0, 16)
+			divFrame.Size = UDim2.new(1, 0, 0, 20)
 			divFrame.BackgroundTransparency = 1
 			divFrame.Parent = boxContent
-			local line = Instance.new("Frame")
-			line.Size = UDim2.new(1, 0, 0, 1)
-			line.Position = UDim2.new(0, 0, 0.5, 0)
-			line.BackgroundColor3 = Color3.fromRGB(48, 48, 52)
-			line.BorderSizePixel = 0
-			line.Parent = divFrame
-			if dividerText ~= "" then
+			if dividerText == "" then
+				local line = Instance.new("Frame")
+				line.Size = UDim2.new(1, 0, 0, 1)
+				line.Position = UDim2.new(0, 0, 0.5, 0)
+				line.BackgroundColor3 = Color3.fromRGB(48, 48, 52)
+				line.BorderSizePixel = 0
+				line.Parent = divFrame
+			else
 				local textSize = 10
 				if string.len(dividerText) > 20 then textSize = 9 end
 				if string.len(dividerText) > 35 then textSize = 8 end
 				if string.len(dividerText) > 50 then textSize = 7 end
+				local textService = game:GetService("TextService")
+				local textWidth = 60
+				local success, size = pcall(function()
+					return textService:GetTextSize(dividerText, textSize, Enum.Font.GothamMedium, Vector2.new(1000, 20))
+				end)
+				if success and size then
+					textWidth = size.X + 16
+				else
+					textWidth = math.clamp(string.len(dividerText) * textSize * 0.6 + 16, 40, 250)
+				end
+				local leftLine = Instance.new("Frame")
+				leftLine.Size = UDim2.new(0.5, -textWidth/2 - 6, 0, 1)
+				leftLine.Position = UDim2.new(0, 0, 0.5, 0)
+				leftLine.BackgroundColor3 = Color3.fromRGB(48, 48, 52)
+				leftLine.BorderSizePixel = 0
+				leftLine.Parent = divFrame
+				local rightLine = Instance.new("Frame")
+				rightLine.Size = UDim2.new(0.5, -textWidth/2 - 6, 0, 1)
+				rightLine.Position = UDim2.new(0.5, textWidth/2 + 6, 0.5, 0)
+				rightLine.BackgroundColor3 = Color3.fromRGB(48, 48, 52)
+				rightLine.BorderSizePixel = 0
+				rightLine.Parent = divFrame
 				local textLabel = Instance.new("TextLabel")
-				textLabel.Size = UDim2.new(0, 0, 0, 16)
-				textLabel.AutomaticSize = Enum.AutomaticSize.X
+				textLabel.Size = UDim2.new(0, textWidth, 0, 20)
 				textLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
 				textLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-				textLabel.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
+				textLabel.BackgroundTransparency = 1
 				textLabel.Text = dividerText
 				textLabel.TextColor3 = Color3.fromRGB(140, 140, 145)
 				textLabel.TextSize = textSize
 				textLabel.Font = Enum.Font.GothamMedium
 				textLabel.Parent = divFrame
-				local pad = Instance.new("UIPadding", textLabel)
-				pad.PaddingLeft = UDim.new(0, 8)
-				pad.PaddingRight = UDim.new(0, 8)
 			end
 			return divFrame
 		end
@@ -3166,6 +3479,248 @@ function innerElements:CreateColorpicker(text, default, callback)
 			end
 			
 			
+		
+		function tabElements:Createcode(config)
+			currentDualButtonRow = nil
+			config = config or {}
+			local titleText = config.title or config.Title or "Code"
+			local contentText = config.content or config.Content or config.text or config.Text or ""
+			if type(contentText) ~= "string" then contentText = tostring(contentText) end
+
+			local codeFrame = Instance.new("Frame")
+			codeFrame.Size = UDim2.new(1, 0, 0, 80)
+			codeFrame.AutomaticSize = Enum.AutomaticSize.Y
+			codeFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+			codeFrame.BorderSizePixel = 0
+			codeFrame.Parent = tPage
+			Instance.new("UICorner", codeFrame).CornerRadius = UDim.new(0, 6)
+			local stroke = Instance.new("UIStroke", codeFrame)
+			stroke.Color = Color3.fromRGB(50, 50, 55)
+			stroke.Thickness = 1
+			stroke.Parent = codeFrame
+
+			local header = Instance.new("Frame")
+			header.Size = UDim2.new(1, 0, 0, 28)
+			header.BackgroundColor3 = Color3.fromRGB(32, 32, 36)
+			header.BorderSizePixel = 0
+			header.Parent = codeFrame
+			local headerCorner = Instance.new("UICorner", header)
+			headerCorner.CornerRadius = UDim.new(0, 6)
+			local headerFix = Instance.new("Frame")
+			headerFix.Size = UDim2.new(1, 0, 0, 6)
+			headerFix.Position = UDim2.new(0, 0, 1, -6)
+			headerFix.BackgroundColor3 = Color3.fromRGB(32, 32, 36)
+			headerFix.BorderSizePixel = 0
+			headerFix.Parent = header
+
+			local titleLabel = Instance.new("TextLabel")
+			titleLabel.Size = UDim2.new(1, -60, 1, 0)
+			titleLabel.Position = UDim2.new(0, 10, 0, 0)
+			titleLabel.BackgroundTransparency = 1
+			titleLabel.Text = titleText
+			titleLabel.TextColor3 = Color3.fromRGB(240, 240, 245)
+			titleLabel.TextSize = 11
+			titleLabel.Font = Enum.Font.GothamBold
+			titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+			titleLabel.Parent = header
+
+			local copyBtn = Instance.new("ImageButton")
+			copyBtn.Name = "CopyIconBtn"
+			copyBtn.Size = UDim2.new(0, 18, 0, 18)
+			copyBtn.Position = UDim2.new(1, -26, 0.5, -9)
+			copyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+			copyBtn.BorderSizePixel = 0
+			copyBtn.Image = "rbxassetid://10709812159"
+			copyBtn.ImageColor3 = Color3.fromRGB(200, 200, 210)
+			copyBtn.Parent = header
+			Instance.new("UICorner", copyBtn).CornerRadius = UDim.new(0, 4)
+
+			local function setCopyIcon(assetId)
+				local success = false
+				pcall(function()
+					if httpService then
+						httpService:JSONEncode({test = 1})
+					end
+					success = true
+				end)
+				copyBtn.Image = assetId
+			end
+
+			local scrollFrame = Instance.new("ScrollingFrame")
+			scrollFrame.Name = "CodeScroll"
+			scrollFrame.Size = UDim2.new(1, -12, 0, 50)
+			scrollFrame.Position = UDim2.new(0, 6, 0, 34)
+			scrollFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 24)
+			scrollFrame.BorderSizePixel = 0
+			scrollFrame.ScrollBarThickness = 4
+			scrollFrame.ScrollingDirection = Enum.ScrollingDirection.X
+			scrollFrame.AutomaticCanvasSize = Enum.AutomaticSize.X
+			scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+			scrollFrame.ScrollingEnabled = true
+			scrollFrame.Parent = codeFrame
+			Instance.new("UICorner", scrollFrame).CornerRadius = UDim.new(0, 4)
+
+			local codeLabel = Instance.new("TextLabel")
+			codeLabel.Size = UDim2.new(0, 0, 1, 0)
+			codeLabel.AutomaticSize = Enum.AutomaticSize.X
+			codeLabel.BackgroundTransparency = 1
+			codeLabel.Text = contentText
+			codeLabel.TextColor3 = Color3.fromRGB(180, 180, 190)
+			codeLabel.TextSize = 11
+			codeLabel.Font = Enum.Font.Code
+			codeLabel.TextXAlignment = Enum.TextXAlignment.Left
+			codeLabel.TextYAlignment = Enum.TextYAlignment.Center
+			codeLabel.TextWrapped = false
+			codeLabel.Parent = scrollFrame
+
+			local pad = Instance.new("UIPadding", codeLabel)
+			pad.PaddingLeft = UDim.new(0, 8)
+			pad.PaddingRight = UDim.new(0, 8)
+
+			copyBtn.MouseButton1Click:Connect(function()
+				local copied = false
+				if setclipboard then
+					pcall(function() setclipboard(contentText) end)
+					copied = true
+				elseif toclipboard then
+					pcall(function() toclipboard(contentText) end)
+					copied = true
+				elseif set_clipboard then
+					pcall(function() set_clipboard(contentText) end)
+					copied = true
+				end
+				if copied then
+					local origColor = copyBtn.ImageColor3
+					copyBtn.ImageColor3 = Color3.fromRGB(80, 200, 120)
+					task.wait(1)
+					copyBtn.ImageColor3 = origColor
+					copyBtn.Image = "rbxassetid://10709812159"
+				end
+			end)
+
+			task.spawn(function()
+				task.wait(0.1)
+				updateDimensions()
+			end)
+
+			return codeFrame
+		end
+
+		function tabElements:Createinvite(config)
+			currentDualButtonRow = nil
+			config = config or {}
+			local nameText = config.name or config.Name or config.title or "Discord"
+			local imageId = config.image or config.Image or config.icon or ""
+			local linkText = config.link or config.Link or config.invite or ""
+
+			local inviteFrame = Instance.new("Frame")
+			inviteFrame.Size = UDim2.new(1, 0, 0, 90)
+			inviteFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+			inviteFrame.BorderSizePixel = 0
+			inviteFrame.Parent = tPage
+			Instance.new("UICorner", inviteFrame).CornerRadius = UDim.new(0, 8)
+			local stroke = Instance.new("UIStroke", inviteFrame)
+			stroke.Color = Color3.fromRGB(50, 50, 55)
+			stroke.Thickness = 1
+			stroke.Parent = inviteFrame
+
+			local topArea = Instance.new("Frame")
+			topArea.Size = UDim2.new(1, 0, 0, 50)
+			topArea.BackgroundTransparency = 1
+			topArea.Parent = inviteFrame
+
+			local imgLabel = Instance.new("ImageLabel")
+			imgLabel.Size = UDim2.new(0, 40, 0, 40)
+			imgLabel.Position = UDim2.new(0, 10, 0, 10)
+			imgLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+			imgLabel.BorderSizePixel = 0
+			imgLabel.Parent = topArea
+			Instance.new("UICorner", imgLabel).CornerRadius = UDim.new(0, 20)
+			local imgStroke = Instance.new("UIStroke", imgLabel)
+			imgStroke.Color = Color3.fromRGB(60, 60, 65)
+			imgStroke.Thickness = 1
+			imgStroke.Parent = imgLabel
+
+			if imageId ~= "" then
+				local imgStr = tostring(imageId)
+				pcall(function()
+					if httpService then
+						local _ = httpService:JSONEncode({id = imgStr})
+					end
+				end)
+				if tonumber(imgStr) then
+					imgLabel.Image = "rbxassetid://" .. imgStr
+				elseif imgStr:find("rbxassetid://") then
+					imgLabel.Image = imgStr
+				elseif imgStr:find("rbxasset") then
+					imgLabel.Image = imgStr
+				elseif imgStr:find("http") then
+					imgLabel.Image = imgStr
+				else
+					if tonumber(imgStr) then
+						imgLabel.Image = "rbxassetid://" .. imgStr
+					else
+						imgLabel.Image = imgStr
+					end
+				end
+			else
+				imgLabel.Image = "rbxassetid://0"
+			end
+
+			local nameLabel = Instance.new("TextLabel")
+			nameLabel.Size = UDim2.new(1, -70, 0, 20)
+			nameLabel.Position = UDim2.new(0, 60, 0, 15)
+			nameLabel.BackgroundTransparency = 1
+			nameLabel.Text = nameText
+			nameLabel.TextColor3 = Color3.fromRGB(240, 240, 245)
+			nameLabel.TextSize = 13
+			nameLabel.Font = Enum.Font.GothamBold
+			nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+			nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+			nameLabel.Parent = topArea
+
+			local copyBtn = Instance.new("TextButton")
+			copyBtn.Size = UDim2.new(1, -20, 0, 28)
+			copyBtn.Position = UDim2.new(0, 10, 1, -34)
+			copyBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+			copyBtn.Text = "Copy Invite Link"
+			copyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+			copyBtn.TextSize = 11
+			copyBtn.Font = Enum.Font.GothamBold
+			copyBtn.Parent = inviteFrame
+			Instance.new("UICorner", copyBtn).CornerRadius = UDim.new(0, 6)
+
+			copyBtn.MouseButton1Click:Connect(function()
+				local copied = false
+				if setclipboard then
+					pcall(function() setclipboard(linkText) end)
+					copied = true
+				elseif toclipboard then
+					pcall(function() toclipboard(linkText) end)
+					copied = true
+				elseif set_clipboard then
+					pcall(function() set_clipboard(linkText) end)
+					copied = true
+				end
+				if copied then
+					local orig = copyBtn.Text
+					copyBtn.Text = "Copied!"
+					copyBtn.BackgroundColor3 = Color3.fromRGB(60, 180, 100)
+					task.wait(1.2)
+					copyBtn.Text = orig
+					copyBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+				end
+			end)
+
+			task.spawn(function()
+				task.wait(0.1)
+				updateDimensions()
+			end)
+
+			return inviteFrame
+		end
+
+
 		function tabElements:CreateParagraph(config)
 						local titleText = ""
 			local descText = ""
@@ -3247,45 +3802,65 @@ function innerElements:CreateColorpicker(text, default, callback)
 
 
 			
-		function tabElements:CreateDivider(text)
-						local dividerText = ""
+				function tabElements:CreateDivider(text)
+			local dividerText = ""
 			if type(text) == "table" then
 				dividerText = text.text or text.title or text.Text or ""
 			elseif type(text) == "string" then
 				dividerText = text
 			end
 			local divFrame = Instance.new("Frame")
-			divFrame.Size = UDim2.new(1, 0, 0, 16)
+			divFrame.Size = UDim2.new(1, 0, 0, 20)
 			divFrame.BackgroundTransparency = 1
 			divFrame.Parent = tPage
-			local line = Instance.new("Frame")
-			line.Size = UDim2.new(1, 0, 0, 1)
-			line.Position = UDim2.new(0, 0, 0.5, 0)
-			line.BackgroundColor3 = Color3.fromRGB(48, 48, 52)
-			line.BorderSizePixel = 0
-			line.Parent = divFrame
-			if dividerText ~= "" then
+			if dividerText == "" then
+				local line = Instance.new("Frame")
+				line.Size = UDim2.new(1, 0, 0, 1)
+				line.Position = UDim2.new(0, 0, 0.5, 0)
+				line.BackgroundColor3 = Color3.fromRGB(48, 48, 52)
+				line.BorderSizePixel = 0
+				line.Parent = divFrame
+			else
 				local textSize = 10
 				if string.len(dividerText) > 20 then textSize = 9 end
 				if string.len(dividerText) > 35 then textSize = 8 end
 				if string.len(dividerText) > 50 then textSize = 7 end
+				local textService = game:GetService("TextService")
+				local textWidth = 60
+				local success, size = pcall(function()
+					return textService:GetTextSize(dividerText, textSize, Enum.Font.GothamMedium, Vector2.new(1000, 20))
+				end)
+				if success and size then
+					textWidth = size.X + 16
+				else
+					textWidth = math.clamp(string.len(dividerText) * textSize * 0.6 + 16, 40, 250)
+				end
+				local leftLine = Instance.new("Frame")
+				leftLine.Size = UDim2.new(0.5, -textWidth/2 - 6, 0, 1)
+				leftLine.Position = UDim2.new(0, 0, 0.5, 0)
+				leftLine.BackgroundColor3 = Color3.fromRGB(48, 48, 52)
+				leftLine.BorderSizePixel = 0
+				leftLine.Parent = divFrame
+				local rightLine = Instance.new("Frame")
+				rightLine.Size = UDim2.new(0.5, -textWidth/2 - 6, 0, 1)
+				rightLine.Position = UDim2.new(0.5, textWidth/2 + 6, 0.5, 0)
+				rightLine.BackgroundColor3 = Color3.fromRGB(48, 48, 52)
+				rightLine.BorderSizePixel = 0
+				rightLine.Parent = divFrame
 				local textLabel = Instance.new("TextLabel")
-				textLabel.Size = UDim2.new(0, 0, 0, 16)
-				textLabel.AutomaticSize = Enum.AutomaticSize.X
+				textLabel.Size = UDim2.new(0, textWidth, 0, 20)
 				textLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
 				textLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-				textLabel.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
+				textLabel.BackgroundTransparency = 1
 				textLabel.Text = dividerText
 				textLabel.TextColor3 = Color3.fromRGB(140, 140, 145)
 				textLabel.TextSize = textSize
 				textLabel.Font = Enum.Font.GothamMedium
 				textLabel.Parent = divFrame
-				local pad = Instance.new("UIPadding", textLabel)
-				pad.PaddingLeft = UDim.new(0, 8)
-				pad.PaddingRight = UDim.new(0, 8)
 			end
 			return divFrame
 		end
+
 
 
 			return tabElements
