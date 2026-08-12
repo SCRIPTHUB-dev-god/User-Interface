@@ -3,7 +3,7 @@ local library = loadstring(game:HttpGet("https://github.com/SCRIPTHUB-dev-god/Us
 local window = library:CreateWindow({
 	title = "example hub",
 	desc = "this a good ui library",
-	footer = "wave ui: v1.6",
+	footer = "wave ui: free ui library",
 	opened = true,
 	info = false,
 	transparency = 0.12,
@@ -31,25 +31,16 @@ window:AddTag({
 
 local Tab1 = library:CreateTab("main")
 local Tab2 = library:CreateTab("misc")
-local Tab3 = library:CreateTab("esp")
 
 local leftGroup1 = Tab1:CreateGroupBox("main farm", "left", "open")
 local rightGroup1 = Tab1:CreateGroupBox("Setup farm", "right", "close")
 local allsideGroup1 = Tab1:CreateGroupBox("stats", "allside", "open")
 
 local leftGroup2 = Tab2:CreateGroupBox("setting", "left", "open")
-local rightGroup2 = Tab2:CreateGroupBox("Target Setup", "right", "open")
-local allsideGroup2 = Tab2:CreateGroupBox("Subsystem Router", "allside", "open")
-
-local leftGroup3 = Tab3:CreateGroupBox("Self Options", "left", "open")
-local rightGroup3 = Tab3:CreateGroupBox("Target Setup", "right", "open")
-local allsideGroup3 = Tab3:CreateGroupBox("Subsystem Router", "allside", "open")
+local rightGroup2 = Tab2:CreateGroupBox("support", "right", "open")
 
 local subTab1 = allsideGroup1:tabbox("view stats")
 local subTab2 = allsideGroup1:tabbox("Set stats")
-
-local subTab3 = leftGroup2:tabbox("perfomance")
-local subTab4 = leftGroup2:tabbox("ui")
 
 leftGroup1:CreateButton("reset", function()
 	print("Teleporting...")
@@ -128,6 +119,21 @@ subTab2:CreateDropdown({
 	end
 })
 
-subTab4:CreateColorpicker("ui color", Color3.fromRGB(0,140,255), function() end)
-subTab4:CreateKeybind("G", function()
+leftGroup2:CreateColorpicker("UI Color", Color3.fromRGB(0, 140, 255), function(newColor)
+    print(newColor)
 end)
+
+leftGroup2:CreateKeybind("G", function()
+    print("G has click")
+end)
+
+rightGroup2:Createcode({
+     title = "Example",
+     content = [[print("Hello World")]],
+})
+
+rightGroup2:Createinvite({
+     name = "My Discord",
+     image = "18751483361", -- direct id or "rbxassetid://id"
+     link = "https://discord.gg/dbE59H6grJ",
+})
