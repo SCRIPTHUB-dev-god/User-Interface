@@ -10,10 +10,6 @@ local library = loadstring(game:HttpGet("https://github.com/SCRIPTHUB-dev-god/Us
 ```luau
 local library = loadstring(game:HttpGet("https://github.com/SCRIPTHUB-dev-god/User-Interface/releases/latest/download/wave-ui.lua"))()
 ```
-**raw loader** <-- slow update
-```luau
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/User-Interface/refs/heads/main/library/wave-ui.lua"))()
-```
 ---
 **window**
 ```luau
