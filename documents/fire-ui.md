@@ -19,6 +19,7 @@ local window = library:window({
 
 `dark`,`neon`,`ocean`
 `golden`,`light`,`fire`
+`crimson`
 
 **icon support**
 
