@@ -23,7 +23,7 @@ local window = library:window({
 
 **icon support**
 
-**[lucide icon](lucide.dev/icons/)**
+**[lucide icon](https://lucide.dev/icons/)**
 
 **tag**
 ```luau
