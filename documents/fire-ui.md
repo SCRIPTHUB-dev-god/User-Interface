@@ -23,11 +23,7 @@ local window = library:window({
 
 **icon support**
 
-`apple`,`clipboard`,`code`,`copy`,`eye`
-`folder`,`globe`,`home`,`info`,`key`
-`laptop`,`rocket`,`search`,`server`
-`settings`,`shield`,`sprout`,`star`
-`sword`,`swords`,`terminal`,`user`
+**[lucide icon](lucide.dev/icons/)**
 
 **tag**
 ```luau
