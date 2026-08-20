@@ -1,15 +1,16 @@
 # fire ui library
 **get library**
 
-select version
+**select version**
 ```luau
 local version = "v1.0.0_fireui"
 local library = loadstring(game:HttpGet("https://github.com/SCRIPTHUB-dev-god/User-Interface/releases/download/..version../fire-ui.lua"))()
 ```
-lastest
+**lastest**
 ```luau
 local library = loadstring(game:HttpGet("https://github.com/SCRIPTHUB-dev-god/User-Interface/releases/latest/download/fire-ui.lua"))()
 ```
+---
 **window**
 ```luau
 local window = library:window({
@@ -28,6 +29,19 @@ local window = library:window({
 `golden`,`light`,`fire`
 `crimson`
 
+```luau
+library:CreateTheme({
+    name = "Ametis",
+    MainBG = Color3.fromRGB(24,24,26),
+    HeaderBG = Color3.fromRGB(15,15,15),
+    Stroke = Color3.fromRGB(55,55,60),
+    ButtonBG = Color3.fromRGB(36,36,40),
+    SectionBG = Color3.fromRGB(30,30,33),
+    Accent = Color3.fromRGB(140,140,140),
+    IconCl = Color3.fromRGB(200,200,200)
+})
+```
+
 **icon support**
 
 **[lucide icon](https://lucide.dev/icons/)**
@@ -44,11 +58,27 @@ window:AddTag({
     end
 })
 ```
+**toggle ui set**
+```luau
+window:SetToggleUi({
+    title = "fire ui",
+    icon = "snowflake"
+})
+```
 **tab**
 ```luau
 local tabMain = window:AddTab("Main", "code")
 ```
+---
 # utility
+**section**
+```luau
+tabMain:section({
+    title = "Combat",
+    icon = "sword",
+    opened = true
+})
+```
 **Tabbox**
 ```luau
 local tab = tabMain:AddTabbox()
@@ -120,7 +150,13 @@ Tab:AddDropdown({
 Tab:AddParagraph({
     Title = "this a paragraph",
     Desc = "set this element as you like",
-    Color = "Red"
+    Color = "Red" -White,Gray,Red,Blue,Green,Purple,Pink
+     Button = {
+        Title = "Click",
+        Callback = function()
+            
+        end
+    }
 })
 ```
 **input**
