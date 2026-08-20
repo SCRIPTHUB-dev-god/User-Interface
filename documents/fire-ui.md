@@ -1,13 +1,20 @@
 # fire ui library
 **get library**
+
+select version
 ```luau
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/User-Interface/refs/heads/main/library/fire-ui.lua"))()
+local version = "v1.0.0_fireui"
+local library = loadstring(game:HttpGet("https://github.com/SCRIPTHUB-dev-god/User-Interface/releases/download/..version../fire-ui.lua"))()
+```
+lastest
+```luau
+local library = loadstring(game:HttpGet("https://github.com/SCRIPTHUB-dev-god/User-Interface/releases/latest/download/fire-ui.lua"))()
 ```
 **window**
 ```luau
 local window = library:window({
     title = "Premium Hub Mobile",
-    desc = "v1.2.5",
+    desc = "v1.0.0",
     transparent = 0.15,
     icon = "terminal",
     theme = "neon",
