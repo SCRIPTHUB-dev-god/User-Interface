@@ -95,7 +95,7 @@ library:Notification({
 **divider**
 ```luau
 window:AddDivider() -- for tab
-Tab:AddDivider() -- for main tab and section
+Tab:AddDivider("divider") -- for main tab and section
 ```
 # element
 **button**
@@ -159,6 +159,8 @@ Tab:AddParagraph({
     }
 })
 ```
+SetDesc
+``prgf:SetDesc("halo")``
 **input**
 ```luau
 Tab:AddInput({
