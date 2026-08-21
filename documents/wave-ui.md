@@ -3,7 +3,7 @@
 
 **select version**
 ```luau
-local version = "v1.0.2_waveui"
+local version = "v1.0.2"
 local library = loadstring(game:HttpGet("https://github.com/SCRIPTHUB-dev-god/User-Interface/releases/download/..version../wave-ui.lua"))()
 ```
 **lastest version** <-- recommend
