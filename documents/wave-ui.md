@@ -3,7 +3,7 @@
 
 **select version**
 ```luau
-local version = "v1.0.1"
+local version = "v1.0.2_waveui"
 local library = loadstring(game:HttpGet("https://github.com/SCRIPTHUB-dev-god/User-Interface/releases/download/..version../wave-ui.lua"))()
 ```
 **lastest version** <-- recommend
@@ -108,6 +108,7 @@ end)
 rightGroup:CreateDropdown({
 	text = "Hit Priority",
 	list = {"Head", "HumanoidRootPart", "Torso"},
+     default = {"Head", "Torso"}
 	multi = true,
 	callback = function(selection)
 		print("Selected priorities:")
