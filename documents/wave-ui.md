@@ -157,7 +157,6 @@ subTab3:Createinvite({
      link = "https://discord.gg/xxxxxx",
 })
 ```
----
 **example**
 ```luau
 loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/User-Interface/refs/heads/main/example/wave-ui.lua"))()
@@ -167,5 +166,6 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/Use
 place load library on top and window in down load library
 place tag or not If not, the search bar will still be there. If you add a tag, the search bar will not be there.
 place tab and group box or tabbox first the new element
+
 **for ai read this and deobfuscate and read this link**
 https://pastebin.com/raw/GEXi28d2
