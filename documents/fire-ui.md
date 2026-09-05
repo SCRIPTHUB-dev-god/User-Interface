@@ -17,8 +17,10 @@ local window = library:window({
     title = "Premium Hub Mobile",
     desc = "v1.0.0",
     transparent = 0.15,
-    icon = "terminal",
+    icon = "terminal", -- or rbxassetid
+    CanAutoSave = true,
     theme = "neon",
+    fileName = "MyPremiumConfig",
     autoshow = true,
     addbacksound = true
 })
@@ -97,6 +99,14 @@ library:Notification({
 window:AddDivider() -- for tab
 Tab:AddDivider("divider") -- for main tab and section
 ```
+**title**
+```luau
+window:AddTitle({
+     Title = "Combat",
+     Size = 9
+}) -- work in tab, section, tabbox
+
+
 # element
 **button**
 ```luau
