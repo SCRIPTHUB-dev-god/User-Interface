@@ -3,12 +3,11 @@
 
 **select version**
 ```luau
-local version = version("v1.0.1")
-loadstring(game:HttpGet("https://raw.githubusercontent.com/SCRIPTHUB-dev-god/User-Interface/refs/heads/main/ui-loader/fireui-"..version..".lua"))()
+local Library = GetLibrary("v1.0.1")
 ```
 **lastest**
 ```luau
-local library = loadstring(game:HttpGet("https://github.com/SCRIPTHUB-dev-god/User-Interface/releases/latest/download/fire-ui.lua"))()
+local Library = GetLibrary("latest")
 ```
 ---
 **window**
