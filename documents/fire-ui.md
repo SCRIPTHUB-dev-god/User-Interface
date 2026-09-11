@@ -158,7 +158,7 @@ Tab:AddDropdown({
 ```
 **paragraph**
 ```luau
-Tab:AddParagraph({
+local prgf = Tab:AddParagraph({
     Title = "this a paragraph",
     Desc = "set this element as you like",
     Color = "Red" -White,Gray,Red,Blue,Green,Purple,Pink
