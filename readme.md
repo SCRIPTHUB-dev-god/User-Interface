@@ -9,3 +9,9 @@
 **[open documents](https://github.com/SCRIPTHUB-dev-god/User-Interface/blob/main/documents/fire-ui.md)**
 
 ---
+# update logs
+**fire ui**
+```txt
+```
+```txt
+```
